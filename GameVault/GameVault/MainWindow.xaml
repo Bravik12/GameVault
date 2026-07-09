@@ -7,6 +7,30 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        
+        <TextBlock
+                Text="GameVault"
+                Grid.Row="0"
+                FontSize="24"
+                FontWeight="Bold"
+                Margin="10"/>
+        <StackPanel
+            Grid.Row="1"
+            Orientation="Horizontal"
+            Margin="10">
 
+            <Button 
+                x:Name="AddGameButton"
+                Content="Add Game" 
+                Width="100" 
+                Height="30"
+                Click="AddGameButton_Click"/>
+        </StackPanel>
     </Grid>
 </Window>

@@ -20,5 +20,14 @@ namespace GameVault
         {
             InitializeComponent();
         }
+
+        private void AddGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            MessageBox.Show("Add Game button clicked! This will open the AddGameWindow.");
+            // Open the AddGameWindow when the button is clicked
+            // AddGameWindow addGameWindow = new AddGameWindow();
+            // addGameWindow.ShowDialog();
+        }
+
     }
 }

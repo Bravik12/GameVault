@@ -11,6 +11,7 @@ using System.Windows.Shapes;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography.X509Certificates;
 using GameVault.Models;
+using GameVault.Converters;
 
 namespace GameVault
 {
@@ -20,6 +21,9 @@ namespace GameVault
     public partial class MainWindow : Window
     {
         public ObservableCollection<Game> Games { get; }
+
+        private EmptyCollectionToVisibilityConverter test =
+            new EmptyCollectionToVisibilityConverter();
 
         public MainWindow()
         {

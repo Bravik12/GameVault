@@ -4,8 +4,14 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameVault"
+        xmlns:converters="clr-namespace:GameVault.Converters"
         mc:Ignorable="d"
         Title="MainWindow" Height="450" Width="800">
+    
+    <Window.Resources>
+        <converters:EmptyCollectionToVisibilityConverter x:Key="EmptyCollectionConverter"/>
+    </Window.Resources>
+    
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -32,35 +38,46 @@
                 Height="30"
                 Click="AddGameButton_Click"/>
         </StackPanel>
-
-        <DataGrid
-            Grid.Row="2"
-            Margin="10"
-            AutoGenerateColumns="False"
-            ItemsSource="{Binding Games}">
-            <DataGrid.Columns>
-                <DataGridTextColumn
-                    Header="Name"
-                    Binding="{Binding Name}"/>
-                
-                <DataGridTextColumn
-                    Header="Genre"
-                    Binding="{Binding Genre}"/>
-                
-                <DataGridTextColumn
-                    Header="Status"
-                    Binding="{Binding Status}"/>
-                
-                <DataGridTextColumn
-                    Header="Rating"
-                    Binding="{Binding Rating}"/>
-                
-                <DataGridTextColumn
-                    Header="Playtime"
-                    Binding="{Binding PlaytimeHours}"/>
-                
-            </DataGrid.Columns>
-        </DataGrid>
         
+        <Grid Grid.Row="2">
+            
+            <DataGrid
+                
+                Margin="10"
+                AutoGenerateColumns="False"
+                ItemsSource="{Binding Games}">
+
+                <DataGrid.Columns>
+                    <DataGridTextColumn
+                        Header="Name"
+                        Binding="{Binding Name}"/>
+                
+                    <DataGridTextColumn
+                        Header="Genre"
+                        Binding="{Binding Genre}"/>
+                
+                    <DataGridTextColumn
+                        Header="Status"
+                        Binding="{Binding Status}"/>
+                
+                    <DataGridTextColumn
+                        Header="Rating"
+                        Binding="{Binding Rating}"/>
+                
+                    <DataGridTextColumn
+                        Header="Playtime"
+                        Binding="{Binding PlaytimeHours}"/>
+                
+                </DataGrid.Columns>
+                
+            </DataGrid>
+
+            <TextBlock
+                Text="No games in your library"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Center"
+                FontSize="16"
+                Visibility="{Binding Games, Converter={StaticResource EmptyCollectionConverter}}"/>
+        </Grid>
     </Grid>
 </Window>

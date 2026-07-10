@@ -9,7 +9,7 @@
         Title="MainWindow" Height="450" Width="800">
     
     <Window.Resources>
-        <converters:EmptyCollectionToVisibilityConverter x:Key="EmptyCollectionConverter"/>
+        <converters:BooleanInverseConverter x:Key="BooleanInverseConverter"/>
     </Window.Resources>
     
     <Grid>
@@ -40,12 +40,13 @@
         </StackPanel>
         
         <Grid Grid.Row="2">
-            
+
             <DataGrid
                 
                 Margin="10"
                 AutoGenerateColumns="False"
-                ItemsSource="{Binding Games}">
+                ItemsSource="{Binding Games}"
+                CanUserAddRows="False">
 
                 <DataGrid.Columns>
                     <DataGridTextColumn
@@ -77,7 +78,7 @@
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 FontSize="16"
-                Visibility="{Binding Games, Converter={StaticResource EmptyCollectionConverter}}"/>
+                Visibility="{Binding HasGames, Converter={StaticResource BooleanInverseConverter}}"/>
         </Grid>
     </Grid>
 </Window>

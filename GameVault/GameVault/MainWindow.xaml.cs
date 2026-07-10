@@ -12,16 +12,38 @@ using System.Collections.ObjectModel;
 using System.Security.Cryptography.X509Certificates;
 using GameVault.Models;
 using GameVault.Converters;
+using System.ComponentModel;
+using System.Collections.Specialized;
 
 namespace GameVault
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public ObservableCollection<Game> Games { get; }
 
+        private bool hasGames;
+
+        public bool HasGames
+        {
+            get => hasGames;
+            private set
+            {
+                hasGames = value;
+                OnPropertyChanged(nameof(HasGames));
+            }
+        }
+
+        public event PropertyChangedEventHandler? PropertyChanged;
+
+        private void OnPropertyChanged(string propertyName)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+        }
+
+        private void Games_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+        {
+            HasGames = Games.Count > 0;
+        }
 
         public MainWindow()
         {
@@ -29,11 +51,14 @@ namespace GameVault
 
             Games = new ObservableCollection<Game>();
 
-            LoadSampleGames();
+            HasGames = Games.Count > 0;
 
             DataContext = this;
 
+            Games.CollectionChanged += Games_CollectionChanged;
+
         }
+
 
         private void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
@@ -41,22 +66,13 @@ namespace GameVault
 
             addGameWindow.Owner = this;
 
-            addGameWindow.ShowDialog();
-
-        }
-
-        private void LoadSampleGames()
-        {
-            Games.Add(new Game
+            if (addGameWindow.ShowDialog() == true && addGameWindow.CreatedGame is Game game)
             {
-                Name = "The Witcher 3",
-                Genre = "RPG",
-                Status = GameStatus.Playing,
-                Rating = 10,
-                PlaytimeHours = 120.5,
-                Notes = "An amazing open-world experience!"
-            });
+                Games.Add(game);
+            }
         }
+
+        
 
 
     }

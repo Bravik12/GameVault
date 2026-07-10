@@ -1,5 +1,8 @@
-﻿using System;
+﻿using GameVault.Models;
+using GameVault.ViewModels;
+using System;
 using System.Collections.Generic;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
@@ -9,7 +12,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
-using GameVault.ViewModels;
 
 
 namespace GameVault.Views
@@ -17,11 +19,29 @@ namespace GameVault.Views
 
     public partial class AddGameWindow : Window
     {
+        public event EventHandler<Game>? GameAdded;
+
+        private readonly AddGameViewModel viewModel;
+
+        public Game? CreatedGame { get; set; }
+    
         public AddGameWindow()
         {
             InitializeComponent();
 
-            DataContext = new AddGameViewModel();
+            viewModel = new AddGameViewModel();
+
+            viewModel.GameAdded += ViewModel_GameAdded;
+
+            DataContext = viewModel;
+        }
+
+        private void ViewModel_GameAdded(object? sender, Game e)
+        {
+            CreatedGame = e;
+
+            DialogResult = true;
+
         }
     }
 }

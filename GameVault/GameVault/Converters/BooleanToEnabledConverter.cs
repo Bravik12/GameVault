@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Globalization;
-using System.Windows;
 using System.Windows.Data;
 
 namespace GameVault.Converters
 {
-    public class BooleanInverseConverter : IValueConverter
+    public class BooleanToEnabledConverter : IValueConverter
     {
         public object Convert(
             object value,
@@ -13,14 +12,12 @@ namespace GameVault.Converters
             object parameter,
             CultureInfo culture)
         {
-            if (value is bool hasGames)
+            if (value is bool isNotRated)
             {
-                return hasGames
-                    ? Visibility.Collapsed
-                    : Visibility.Visible;
+                return !isNotRated;
             }
 
-            return Visibility.Visible;
+            return true;
         }
 
         public object ConvertBack(

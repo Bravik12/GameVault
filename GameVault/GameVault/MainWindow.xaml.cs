@@ -12,14 +12,18 @@ using System.Collections.ObjectModel;
 using System.Security.Cryptography.X509Certificates;
 using GameVault.Models;
 using GameVault.Converters;
+using GameVault.Services;
 using System.ComponentModel;
 using System.Collections.Specialized;
+using System.Linq;
 
 namespace GameVault
 {
     public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public ObservableCollection<Game> Games { get; }
+
+        private readonly GameStorageService storageService;
 
         private bool hasGames;
 
@@ -45,22 +49,8 @@ namespace GameVault
             HasGames = Games.Count > 0;
         }
 
-        public MainWindow()
-        {
-            InitializeComponent();
 
-            Games = new ObservableCollection<Game>();
-
-            HasGames = Games.Count > 0;
-
-            DataContext = this;
-
-            Games.CollectionChanged += Games_CollectionChanged;
-
-        }
-
-
-        private void AddGameButton_Click(object sender, RoutedEventArgs e)
+       private void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
             var addGameWindow = new Views.AddGameWindow();
 
@@ -69,10 +59,47 @@ namespace GameVault
             if (addGameWindow.ShowDialog() == true && addGameWindow.CreatedGame is Game game)
             {
                 Games.Add(game);
+
+                storageService.SaveGames(Games);
             }
         }
 
-        
+        private void LoadGames()
+        {
+            var loadedGames = storageService.LoadGames();
+
+            foreach (var game in loadedGames)
+            {
+                Games.Add(game);
+            }
+        }
+
+
+
+        public MainWindow()
+        {
+            InitializeComponent();
+
+            storageService = new GameStorageService();
+
+            Games = new ObservableCollection<Game>();
+
+            Games.CollectionChanged += (s, e) =>
+            {
+                HasGames = Games.Count > 0;
+            };
+            
+            DataContext = this;
+
+            LoadGames();
+
+            Games.CollectionChanged += Games_CollectionChanged;
+
+        }
+
+
+ 
+
 
 
     }

@@ -6,12 +6,285 @@
         xmlns:local="clr-namespace:GameVault"
         xmlns:converters="clr-namespace:GameVault.Converters"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    
+        Title="GameVault" Height="600" Width="1000"
+        MinHeight="500" MinWidth="800"
+        Background="#0D0B14">
+
     <Window.Resources>
         <converters:BooleanInverseConverter x:Key="BooleanInverseConverter"/>
+
+        <!--  ================= PALETTE ================= -->
+        <SolidColorBrush x:Key="BgDeepest"   Color="#0A0912"/>
+        <SolidColorBrush x:Key="BgPanel"     Color="#141225"/>
+        <SolidColorBrush x:Key="BgPanelAlt"  Color="#191733"/>
+        <SolidColorBrush x:Key="BgRow"       Color="#16142A"/>
+        <SolidColorBrush x:Key="BgRowAlt"    Color="#1B1836"/>
+        <SolidColorBrush x:Key="BorderSubtle" Color="#2A2748"/>
+        <SolidColorBrush x:Key="AccentPurple" Color="#7C4DFF"/>
+        <SolidColorBrush x:Key="AccentPurpleDark" Color="#5B2FBF"/>
+        <SolidColorBrush x:Key="AccentBlue"   Color="#3A6FF7"/>
+        <SolidColorBrush x:Key="TextPrimary"  Color="#F1EFFB"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#9C97BE"/>
+        <SolidColorBrush x:Key="TextMuted"    Color="#635E85"/>
+        <SolidColorBrush x:Key="DangerRed"    Color="#E5484D"/>
+        <SolidColorBrush x:Key="DangerRedDark" Color="#A13236"/>
+
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#0A0912" Offset="0"/>
+            <GradientStop Color="#1C1440" Offset="0.55"/>
+            <GradientStop Color="#2A1750" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AccentGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#7C4DFF" Offset="0"/>
+            <GradientStop Color="#3A6FF7" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!--  ================= BUTTON STYLES ================= -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentGradient}"/>
+            <Setter Property="Foreground" Value="#0A0912"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter TargetName="border" Property="Background" Value="#2A2748"/>
+                                <Setter Property="Foreground" Value="#635E85"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button" BasedOn="{x:Null}">
+            <Setter Property="Background" Value="#191733"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                                <Setter TargetName="border" Property="Background" Value="#221F42"/>
+                            </Trigger>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Foreground" Value="#4A4670"/>
+                                <Setter TargetName="border" Property="BorderBrush" Value="#211F3A"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
+            <Setter Property="Foreground" Value="{StaticResource DangerRed}"/>
+            <Style.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="BorderBrush" Value="{StaticResource DangerRed}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  ================= TEXTBOX ================= -->
+        <Style x:Key="SearchBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource AccentPurple}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Center"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost"
+                                          Margin="{TemplateBinding Padding}"
+                                          VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ================= COMBOBOX ================= -->
+        <Style x:Key="FilterCombo" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,0"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleBtn"
+                                          Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="{StaticResource BgPanelAlt}"
+                                                BorderBrush="{StaticResource BorderSubtle}"
+                                                BorderThickness="1"
+                                                CornerRadius="6">
+                                            <Grid Margin="10,0,8,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="&#9662;"
+                                                           Grid.Column="1"
+                                                           Foreground="{StaticResource AccentPurple}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="10"/>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter Margin="10,0,26,0"
+                                              VerticalAlignment="Center"
+                                              IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"/>
+                            <Popup x:Name="Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{StaticResource BgPanelAlt}"
+                                        BorderBrush="{StaticResource AccentPurple}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Margin="0,4,0,0"
+                                        MinWidth="{TemplateBinding ActualWidth}">
+                                    <ScrollViewer MaxHeight="200">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentPurpleDark}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  ================= DATAGRID ================= -->
+        <Style x:Key="VaultGrid" TargetType="DataGrid">
+            <Setter Property="Background" Value="{StaticResource BgPanel}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="RowBackground" Value="{StaticResource BgRow}"/>
+            <Setter Property="AlternatingRowBackground" Value="{StaticResource BgRowAlt}"/>
+            <Setter Property="GridLinesVisibility" Value="None"/>
+            <Setter Property="HeadersVisibility" Value="Column"/>
+            <Setter Property="RowHeight" Value="34"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="VerticalGridLinesBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderSubtle}"/>
+        </Style>
+
+        <Style TargetType="DataGridColumnHeader">
+            <Setter Property="Background" Value="#1C1938"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Padding" Value="12,10"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="0,0,0,2"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        </Style>
+
+        <Style TargetType="DataGridRow">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Style.Triggers>
+                <Trigger Property="IsSelected" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentPurpleDark}"/>
+                </Trigger>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter Property="Background" Value="#221F42"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style TargetType="DataGridCell">
+            <Setter Property="Padding" Value="12,4"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="DataGridCell">
+                        <Border Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
-    
+
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -19,104 +292,141 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        
-        <TextBlock
-                Text="GameVault"
-                Grid.Row="0"
-                FontSize="24"
-                FontWeight="Bold"
-                Margin="10"/>
-        <StackPanel
-            Grid.Row="1"
-            Orientation="Horizontal"
-            Margin="10">
 
-            <Button 
-                x:Name="AddGameButton"
-                Content="Add Game" 
-                Width="100" 
-                Height="30"
-                Click="AddGameButton_Click"/>
-            
-            <Button 
-                x:Name="EditGameButton"
-                Content="Edit Game" 
-                Width="100" 
-                Height="30"
-                Margin="10,0,0,0"
-                Click="EditGameButton_Click"
-                IsEnabled="{Binding HasSelectedGame}"/>
+        <!--  ============ HEADER ============ -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderGradient}">
+            <Grid Margin="20,16">
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                    <Border Width="34" Height="34"
+                            CornerRadius="8"
+                            Background="{StaticResource AccentGradient}"
+                            Margin="0,0,12,0">
+                        <TextBlock Text="&#127918;"
+                                   FontSize="17"
+                                   HorizontalAlignment="Center"
+                                   VerticalAlignment="Center"/>
+                    </Border>
+                    <StackPanel VerticalAlignment="Center">
+                        <TextBlock Text="GameVault"
+                                   FontSize="22"
+                                   FontWeight="Bold"
+                                   Foreground="{StaticResource TextPrimary}"/>
+                        <TextBlock Text="Your personal game library"
+                                   FontSize="11"
+                                   Foreground="{StaticResource TextSecondary}"/>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+        </Border>
 
-            <TextBox
-                x:Name="SearchTextBox"
-                Width="200"
-                Height="20"
-                Margin="10,0,0,0"
-                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
-            
-            <ComboBox
-                x:Name="FilterComboBox"
-                Width="120"
-                Height="24"
-                Margin="10,0,0,0"
-                ItemsSource="{Binding AvailableStatuses}"
-                SelectedItem="{Binding SelectedStatus}"/>
+        <!--  ============ TOOLBAR ============ -->
+        <Border Grid.Row="1"
+                Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderSubtle}"
+                BorderThickness="0,0,0,1">
+            <Grid Margin="20,12">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
 
-            <Button 
-                x:Name="DeleteGameButton"
-                Content="Delete Game" 
-                Width="100" 
-                Height="30"
-                Margin="110,0,0,0"
-                Click="DeleteGameButton_Click"
-                IsEnabled="{Binding HasSelectedGame}"/>
-            
-            
-        </StackPanel>
-        
-        <Grid Grid.Row="2">
+                <StackPanel Grid.Column="0" Orientation="Horizontal">
+                    <Button x:Name="AddGameButton"
+                            Content="+ Add Game"
+                            Width="110"
+                            Height="34"
+                            Style="{StaticResource PrimaryButton}"
+                            Click="AddGameButton_Click"/>
 
-            <DataGrid
-                
-                Margin="10"
-                AutoGenerateColumns="False"
-                ItemsSource="{Binding GamesView}"
-                SelectedItem="{Binding SelectedGame}"
-                CanUserAddRows="False"
-                IsReadOnly="True">
-                
+                    <Button x:Name="EditGameButton"
+                            Content="Edit"
+                            Width="80"
+                            Height="34"
+                            Margin="8,0,0,0"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="EditGameButton_Click"
+                            IsEnabled="{Binding HasSelectedGame}"/>
+
+                    <Button x:Name="DeleteGameButton"
+                            Content="Delete"
+                            Width="80"
+                            Height="34"
+                            Margin="8,0,0,0"
+                            Style="{StaticResource DangerButton}"
+                            Click="DeleteGameButton_Click"
+                            IsEnabled="{Binding HasSelectedGame}"/>
+                </StackPanel>
+
+                <TextBox x:Name="SearchTextBox"
+                         Grid.Column="2"
+                         Width="220"
+                         Height="34"
+                         Margin="10,0,10,0"
+                         Style="{StaticResource SearchBox}"
+                         Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
+                         Tag="Search your library..."/>
+
+                <ComboBox x:Name="FilterComboBox"
+                          Grid.Column="2"
+                          HorizontalAlignment="Right"
+                          Width="140"
+                          Height="34"
+                          Style="{StaticResource FilterCombo}"
+                          ItemsSource="{Binding AvailableStatuses}"
+                          SelectedItem="{Binding SelectedStatus}"/>
+            </Grid>
+        </Border>
+
+        <!--  ============ GAME LIST ============ -->
+        <Grid Grid.Row="2" Background="{StaticResource BgDeepest}">
+            <DataGrid Margin="20"
+                      Style="{StaticResource VaultGrid}"
+                      AutoGenerateColumns="False"
+                      ItemsSource="{Binding GamesView}"
+                      SelectedItem="{Binding SelectedGame}"
+                      CanUserAddRows="False"
+                      IsReadOnly="True">
 
                 <DataGrid.Columns>
-                    <DataGridTextColumn
-                        Header="Name"
-                        Binding="{Binding Name}"/>
-                
-                    <DataGridTextColumn
-                        Header="Genre"
-                        Binding="{Binding Genre}"/>
-                
-                    <DataGridTextColumn
-                        Header="Status"
-                        Binding="{Binding Status}"/>
-                
-                    <DataGridTextColumn
-                        Header="Rating"
-                        Binding="{Binding Rating}"/>
-                
-                    <DataGridTextColumn
-                        Header="Playtime"
-                        Binding="{Binding PlaytimeHours}"/>
-                
+                    <DataGridTextColumn Header="NAME" Binding="{Binding Name}" Width="2*"/>
+                    <DataGridTextColumn Header="GENRE" Binding="{Binding Genre}" Width="1.3*"/>
+                    <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="1*"/>
+                    <DataGridTextColumn Header="RATING" Binding="{Binding Rating}" Width="0.8*"/>
+                    <DataGridTextColumn Header="PLAYTIME (H)" Binding="{Binding PlaytimeHours}" Width="1*"/>
                 </DataGrid.Columns>
-                
             </DataGrid>
 
-            <TextBlock
-                Text="No games in your library"
-                HorizontalAlignment="Center"
-                VerticalAlignment="Center"
-                FontSize="16"
-                Visibility="{Binding HasGames, Converter={StaticResource BooleanInverseConverter}}"/>
+            <StackPanel HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Visibility="{Binding HasGames, Converter={StaticResource BooleanInverseConverter}}">
+                <TextBlock Text="&#127918;"
+                           FontSize="40"
+                           HorizontalAlignment="Center"
+                           Opacity="0.4"
+                           Margin="0,0,0,10"/>
+                <TextBlock Text="No games in your library"
+                           HorizontalAlignment="Center"
+                           FontSize="16"
+                           FontWeight="SemiBold"
+                           Foreground="{StaticResource TextPrimary}"/>
+                <TextBlock Text="Click &quot;Add Game&quot; to start building your collection"
+                           HorizontalAlignment="Center"
+                           FontSize="12"
+                           Foreground="{StaticResource TextMuted}"
+                           Margin="0,4,0,0"/>
+            </StackPanel>
         </Grid>
+
+        <!--  ============ FOOTER / STATUS BAR ============ -->
+        <Border Grid.Row="3"
+                Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderSubtle}"
+                BorderThickness="0,1,0,0">
+            <TextBlock Margin="20,8"
+                       Foreground="{StaticResource TextMuted}"
+                       FontSize="11"
+                       Text="{Binding GamesView.Count, StringFormat='{}{0} games in library'}"/>
+        </Border>
     </Grid>
 </Window>

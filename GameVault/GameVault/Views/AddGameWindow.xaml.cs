@@ -25,11 +25,11 @@ namespace GameVault.Views
 
         public Game? CreatedGame { get; set; }
     
-        public AddGameWindow()
+        public AddGameWindow(Game? game = null)
         {
             InitializeComponent();
 
-            viewModel = new AddGameViewModel();
+            viewModel = new AddGameViewModel(game);
 
             viewModel.GameAdded += ViewModel_GameAdded;
 

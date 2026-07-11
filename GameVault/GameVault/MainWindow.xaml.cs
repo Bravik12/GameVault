@@ -23,6 +23,8 @@ namespace GameVault
     {
         public ObservableCollection<Game> Games { get; }
 
+
+
         private readonly GameStorageService storageService;
 
         private bool hasGames;
@@ -74,7 +76,34 @@ namespace GameVault
             }
         }
 
+        private Game? selectedGame;
+        public Game? SelectedGame
+        {
+            get => selectedGame;
+            set
+            {
+                selectedGame = value;
+                OnPropertyChanged(nameof(SelectedGame));
+            }
+        }
 
+        private void EditGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedGame == null)
+            {
+                MessageBox.Show("Please select a game first.");
+                return;
+            }
+            
+            var editWindow = new Views.AddGameWindow(SelectedGame);
+
+            editWindow.Owner = this;
+
+            if (editWindow.ShowDialog() == true)
+            {
+                storageService.SaveGames(Games);
+            }
+        }
 
         public MainWindow()
         {
@@ -89,9 +118,9 @@ namespace GameVault
                 HasGames = Games.Count > 0;
             };
             
-            DataContext = this;
-
             LoadGames();
+
+            DataContext = this;
 
             Games.CollectionChanged += Games_CollectionChanged;
 

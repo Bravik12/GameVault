@@ -9,9 +9,13 @@ namespace GameVault.ViewModels
 {
     public class AddGameViewModel : ViewModelBase
     {
-        public event EventHandler<Game>? GameAdded;
+        public event EventHandler<Game>? GameSaved;
 
         private readonly Game? existingGame;
+
+        public bool IsEditing => existingGame != null;
+
+        public string SaveButtonText => IsEditing ? "Save Changes" : "Add Game";
 
         public string Name { get; set; } = string.Empty;
 
@@ -121,7 +125,7 @@ namespace GameVault.ViewModels
             game.PlaytimeHours = PlaytimeHours;
             game.Notes = Notes;
 
-            GameAdded?.Invoke(this, game);
+            GameSaved?.Invoke(this, game);
         }
 
 

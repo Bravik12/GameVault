@@ -31,7 +31,7 @@ namespace GameVault.Views
 
             viewModel = new AddGameViewModel(game);
 
-            viewModel.GameAdded += ViewModel_GameAdded;
+            viewModel.GameSaved += ViewModel_GameAdded;
 
             DataContext = viewModel;
         }

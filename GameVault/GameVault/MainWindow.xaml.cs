@@ -77,15 +77,20 @@ namespace GameVault
         }
 
         private Game? selectedGame;
+
         public Game? SelectedGame
         {
             get => selectedGame;
             set
             {
                 selectedGame = value;
+
                 OnPropertyChanged(nameof(SelectedGame));
+                OnPropertyChanged(nameof(HasSelectedGame));
             }
         }
+
+        public bool HasSelectedGame => SelectedGame != null;
 
         private void EditGameButton_Click(object sender, RoutedEventArgs e)
         {

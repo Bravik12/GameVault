@@ -44,7 +44,8 @@
                 Width="100" 
                 Height="30"
                 Margin="10,0,0,0"
-                Click="EditGameButton_Click"/>
+                Click="EditGameButton_Click"
+                IsEnabled="{Binding HasSelectedGame}"/>
             
             <Button 
                 x:Name="DeleteGameButton"
@@ -52,7 +53,8 @@
                 Width="100" 
                 Height="30"
                 Margin="420,0,0,0"
-                Click="DeleteGameButton_Click"/>
+                Click="DeleteGameButton_Click"
+                IsEnabled="{Binding HasSelectedGame}"/>
         </StackPanel>
         
         <Grid Grid.Row="2">
@@ -63,7 +65,9 @@
                 AutoGenerateColumns="False"
                 ItemsSource="{Binding Games}"
                 SelectedItem="{Binding SelectedGame}"
-                CanUserAddRows="False">
+                CanUserAddRows="False"
+                IsReadOnly="True">
+                
 
                 <DataGrid.Columns>
                     <DataGridTextColumn

@@ -136,7 +136,7 @@
         <Button
             Grid.Row="6"
             Grid.Column="1"
-            Content="Add Game"
+            Content="{Binding SaveButtonText}"
             Width="100"
             Height="30"
             HorizontalAlignment="Right"

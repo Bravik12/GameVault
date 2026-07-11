@@ -46,15 +46,32 @@
                 Margin="10,0,0,0"
                 Click="EditGameButton_Click"
                 IsEnabled="{Binding HasSelectedGame}"/>
+
+            <TextBox
+                x:Name="SearchTextBox"
+                Width="200"
+                Height="20"
+                Margin="10,0,0,0"
+                Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"/>
             
+            <ComboBox
+                x:Name="FilterComboBox"
+                Width="120"
+                Height="24"
+                Margin="10,0,0,0"
+                ItemsSource="{Binding AvailableStatuses}"
+                SelectedItem="{Binding SelectedStatus}"/>
+
             <Button 
                 x:Name="DeleteGameButton"
                 Content="Delete Game" 
                 Width="100" 
                 Height="30"
-                Margin="420,0,0,0"
+                Margin="110,0,0,0"
                 Click="DeleteGameButton_Click"
                 IsEnabled="{Binding HasSelectedGame}"/>
+            
+            
         </StackPanel>
         
         <Grid Grid.Row="2">
@@ -63,7 +80,7 @@
                 
                 Margin="10"
                 AutoGenerateColumns="False"
-                ItemsSource="{Binding Games}"
+                ItemsSource="{Binding GamesView}"
                 SelectedItem="{Binding SelectedGame}"
                 CanUserAddRows="False"
                 IsReadOnly="True">

@@ -23,8 +23,6 @@ namespace GameVault
     {
         public ObservableCollection<Game> Games { get; }
 
-
-
         private readonly GameStorageService storageService;
 
         private bool hasGames;
@@ -132,8 +130,85 @@ namespace GameVault
             }
         }
 
+        private GameStatusFilter? selectedStatus;
+
+        public GameStatusFilter? SelectedStatus
+        {
+            get => selectedStatus;
+            set
+            {
+                selectedStatus = value;
+
+                OnPropertyChanged(nameof(SelectedStatus));
+
+                gamesView.Refresh();
+            }
+        }
+
+        private ICollectionView gamesView;
+
+        public ICollectionView GamesView => gamesView;
+
+        public IEnumerable<GameStatusFilter> AvailableStatuses { get; }
+
+        private string searchText = string.Empty;
+
+        public string SearchText
+        {
+            get => searchText;
+            set
+            {
+                searchText = value;
+                OnPropertyChanged(nameof(SearchText));
+
+                gamesView.Refresh();
+            }
+        }
+
+        private bool FilterGames(object obj)
+        {
+            if (obj is not Game game)
+                return false;
+
+            
+            // Search podle názvu
+            if (!string.IsNullOrWhiteSpace(SearchText))
+            {
+                if (!game.Name.Contains(
+                    SearchText,
+                    StringComparison.OrdinalIgnoreCase))
+                {
+                    return false;
+                }
+            }
 
 
+            // Filtr podle statusu
+            if (SelectedStatus?.Status != null)
+            {
+                if (game.Status != SelectedStatus.Status.Value)
+                {
+                    return false;
+                }
+            }
+
+
+            return true;
+        }
+
+        private List<GameStatusFilter> CreateStatusFilters()
+        {
+            return new List<GameStatusFilter>
+    {
+        new() { Name = "All", Status = null },
+        new() { Name = "Not Started", Status = GameStatus.NotStarted },
+        new() { Name = "Playing", Status = GameStatus.Playing },
+        new() { Name = "Completed", Status = GameStatus.Completed },
+        new() { Name = "Dropped", Status = GameStatus.Dropped }
+    };
+        }
+
+        
         public MainWindow()
         {
             InitializeComponent();
@@ -142,21 +217,23 @@ namespace GameVault
 
             Games = new ObservableCollection<Game>();
 
-            Games.CollectionChanged += (s, e) =>
-            {
-                HasGames = Games.Count > 0;
-            };
-            
-            LoadGames();
+            AvailableStatuses = CreateStatusFilters();
 
-            DataContext = this;
+            gamesView = CollectionViewSource.GetDefaultView(Games);
+
+            gamesView.Filter = FilterGames;
+
+            SelectedStatus = AvailableStatuses.First();
 
             Games.CollectionChanged += Games_CollectionChanged;
 
+            DataContext = this;
+
+            LoadGames();
         }
 
 
- 
+
 
 
 

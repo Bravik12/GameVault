@@ -105,6 +105,30 @@ namespace GameVault
             }
         }
 
+        private void DeleteGameButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (SelectedGame == null)
+            {
+                MessageBox.Show("Please select a game first.");
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Are you sure you want to delete {SelectedGame.Name}?",
+                "Delete Game",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                Games.Remove(SelectedGame);
+
+                storageService.SaveGames(Games);
+            }
+        }
+
+
+
         public MainWindow()
         {
             InitializeComponent();

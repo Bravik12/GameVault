@@ -8,140 +8,407 @@
         mc:Ignorable="d"
         ResizeMode="NoResize"
         WindowStartupLocation="CenterOwner"
-        Title="Add Game" Height="450" Width="500">
+        Title="Add Game" Height="560" Width="540"
+        Background="#0A0912">
 
     <Window.Resources>
         <converters:BooleanInverseConverter x:Key="BooleanInverseConverter"/>
         <converters:BooleanToEnabledConverter x:Key="BooleanToEnabledConverter"/>
+
+        <!--  ================= PALETTE ================= -->
+        <SolidColorBrush x:Key="BgDeepest"    Color="#0A0912"/>
+        <SolidColorBrush x:Key="BgPanel"      Color="#141225"/>
+        <SolidColorBrush x:Key="BgPanelAlt"   Color="#191733"/>
+        <SolidColorBrush x:Key="BorderSubtle" Color="#2A2748"/>
+        <SolidColorBrush x:Key="AccentPurple" Color="#7C4DFF"/>
+        <SolidColorBrush x:Key="AccentPurpleDark" Color="#5B2FBF"/>
+        <SolidColorBrush x:Key="AccentBlue"   Color="#3A6FF7"/>
+        <SolidColorBrush x:Key="TextPrimary"  Color="#F1EFFB"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#9C97BE"/>
+        <SolidColorBrush x:Key="TextMuted"    Color="#635E85"/>
+
+        <LinearGradientBrush x:Key="HeaderGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#0A0912" Offset="0"/>
+            <GradientStop Color="#1C1440" Offset="0.55"/>
+            <GradientStop Color="#2A1750" Offset="1"/>
+        </LinearGradientBrush>
+
+        <LinearGradientBrush x:Key="AccentGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#7C4DFF" Offset="0"/>
+            <GradientStop Color="#3A6FF7" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!--  ================= LABEL ================= -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Margin" Value="0,0,14,16"/>
+        </Style>
+
+        <!--  ================= TEXTBOX ================= -->
+        <Style x:Key="InputBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource AccentPurple}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="NotesBox" TargetType="TextBox" BasedOn="{StaticResource InputBox}">
+            <Setter Property="Margin" Value="0,0,0,0"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+        </Style>
+
+        <!--  ================= COMBOBOX ================= -->
+        <Style x:Key="FormCombo" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="Margin" Value="0,0,0,16"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleBtn"
+                                          Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="{StaticResource BgPanelAlt}"
+                                                BorderBrush="{StaticResource BorderSubtle}"
+                                                BorderThickness="1"
+                                                CornerRadius="6">
+                                            <Grid Margin="10,0,10,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="&#9662;"
+                                                           Grid.Column="1"
+                                                           Foreground="{StaticResource AccentPurple}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="10"/>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter Margin="10,8,26,8"
+                                              VerticalAlignment="Center"
+                                              IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"/>
+                            <Popup x:Name="Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{StaticResource BgPanelAlt}"
+                                        BorderBrush="{StaticResource AccentPurple}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Margin="0,4,0,0"
+                                        MinWidth="{TemplateBinding ActualWidth}">
+                                    <ScrollViewer MaxHeight="200">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="10,6"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentPurpleDark}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  ================= CHECKBOX ================= -->
+        <Style x:Key="FormCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="box"
+                                    Width="18" Height="18"
+                                    CornerRadius="4"
+                                    Background="{StaticResource BgPanelAlt}"
+                                    BorderBrush="{StaticResource BorderSubtle}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="check"
+                                           Text="&#10003;"
+                                           FontSize="11"
+                                           FontWeight="Bold"
+                                           Foreground="#0A0912"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter Margin="8,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="box" Property="Background" Value="{StaticResource AccentGradient}"/>
+                                <Setter TargetName="box" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                                <Setter TargetName="check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ================= SLIDER ================= -->
+        <Style x:Key="RatingSliderStyle" TargetType="Slider">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid VerticalAlignment="Center">
+                            <Border Height="4"
+                                    Background="{StaticResource BorderSubtle}"
+                                    CornerRadius="2"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Height="4"
+                                                        Background="{StaticResource AccentGradient}"
+                                                        CornerRadius="2"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge" Opacity="0">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Width="16" Height="16"
+                                                         Fill="{StaticResource TextPrimary}"
+                                                         Stroke="{StaticResource AccentPurple}"
+                                                         StrokeThickness="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="False">
+                                <Setter Property="Opacity" Value="0.4"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ================= BUTTON ================= -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentGradient}"/>
+            <Setter Property="Foreground" Value="#0A0912"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter TargetName="border" Property="Opacity" Value="0.7"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ================= RATING BADGE ================= -->
+        <Style x:Key="RatingBadge" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="MinWidth" Value="38"/>
+        </Style>
     </Window.Resources>
 
-    <Grid Margin="15">
-
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-
+    <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
-            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <TextBlock
-            Grid.Row="0"
-            Grid.Column="0"
-            Text="Name:"
-            VerticalAlignment="Center"
-            Margin="0,0,10,10"/>
-        
-        <TextBox
-            Grid.Row="0"
-            Grid.Column="1"
-            Margin="0,0,0,10"
-            Text="{Binding Name}"/>
+        <!--  ============ HEADER ============ -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderGradient}">
+            <StackPanel Orientation="Horizontal" Margin="20,16">
+                <Border Width="30" Height="30"
+                        CornerRadius="7"
+                        Background="{StaticResource AccentGradient}"
+                        Margin="0,0,12,0">
+                    <TextBlock Text="&#127918;"
+                               FontSize="15"
+                               HorizontalAlignment="Center"
+                               VerticalAlignment="Center"/>
+                </Border>
+                <StackPanel VerticalAlignment="Center">
+                    <TextBlock Text="Add Game"
+                               FontSize="18"
+                               FontWeight="Bold"
+                               Foreground="{StaticResource TextPrimary}"/>
+                    <TextBlock Text="Add a title to your vault"
+                               FontSize="11"
+                               Foreground="{StaticResource TextSecondary}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
 
-        <TextBlock
-            Grid.Row="1"
-            Grid.Column="0"
-            Text="Genre:"
-            VerticalAlignment="Center"
-            Margin="0,0,10,10"/>
+        <!--  ============ FORM ============ -->
+        <Grid Grid.Row="1" Margin="24,20,24,20" Background="{StaticResource BgDeepest}">
 
-        <TextBox
-            Grid.Row="1"
-            Grid.Column="1"
-            Margin="0,0,0,10"
-            Text="{Binding Genre}"/>     
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
 
-        <TextBlock
-            Grid.Row="2"
-            Grid.Column="0"
-            Text="Status:"
-            VerticalAlignment="Center"
-            Margin="0,0,10,10"/>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
 
-        <ComboBox
-            Grid.Row="2"
-            Grid.Column="1"
-            Margin="0,0,0,10"
-            ItemsSource="{Binding AvailableStatuses}"
-            SelectedItem="{Binding Status}"/>
+            <TextBlock Grid.Row="0" Grid.Column="0" Text="NAME" Style="{StaticResource FieldLabel}"/>
+            <TextBox Grid.Row="0" Grid.Column="1" Style="{StaticResource InputBox}" Text="{Binding Name}"/>
 
-        <TextBlock
-            Grid.Row="3"
-            Grid.Column="0"
-            Text="Rating:"
-            VerticalAlignment="Center"
-            Margin="0,0,10,10"/>
+            <TextBlock Grid.Row="1" Grid.Column="0" Text="GENRE" Style="{StaticResource FieldLabel}"/>
+            <TextBox Grid.Row="1" Grid.Column="1" Style="{StaticResource InputBox}" Text="{Binding Genre}"/>
 
-        <StackPanel
-            Grid.Row="3"
-            Grid.Column="1"
-            Orientation="Horizontal">
+            <TextBlock Grid.Row="2" Grid.Column="0" Text="STATUS" Style="{StaticResource FieldLabel}"/>
+            <ComboBox Grid.Row="2" Grid.Column="1"
+                      Style="{StaticResource FormCombo}"
+                      ItemsSource="{Binding AvailableStatuses}"
+                      SelectedItem="{Binding Status}"/>
 
-            <CheckBox
-                Content="Not Rated"
-                IsChecked="{Binding IsNotRated}"
-                Margin="0,0,10,0"/>
+            <TextBlock Grid.Row="3" Grid.Column="0" Text="RATING" Style="{StaticResource FieldLabel}"/>
+            <StackPanel Grid.Row="3" Grid.Column="1" Orientation="Horizontal" Margin="0,0,0,16">
 
-            <Slider
-                x:Name="RatingSlider"
-                Minimum="1"
-                Maximum="10"
-                Value="{Binding Rating, Mode=TwoWay}"
-                TickFrequency="0.25"
-                IsSnapToTickEnabled="True"
-                Width="280"
-                IsEnabled="{Binding IsNotRated, Converter={StaticResource BooleanToEnabledConverter}}"/>
+                <CheckBox Content="Not Rated"
+                          Style="{StaticResource FormCheckBox}"
+                          IsChecked="{Binding IsNotRated}"
+                          Margin="0,0,16,0"/>
 
-            <TextBlock
-                Text="{Binding Rating}"
-                Margin="0,0,10,0"/>
-        </StackPanel>
+                <Slider x:Name="RatingSlider"
+                        Style="{StaticResource RatingSliderStyle}"
+                        Minimum="1"
+                        Maximum="10"
+                        Value="{Binding Rating, Mode=TwoWay}"
+                        TickFrequency="0.25"
+                        IsSnapToTickEnabled="True"
+                        Width="200"
+                        VerticalAlignment="Center"
+                        IsEnabled="{Binding IsNotRated, Converter={StaticResource BooleanToEnabledConverter}}"/>
 
+                <Border Style="{StaticResource RatingBadge}" Margin="12,0,0,0">
+                    <TextBlock Text="{Binding Rating}"
+                               Foreground="{StaticResource TextPrimary}"
+                               FontWeight="SemiBold"
+                               FontSize="12"
+                               HorizontalAlignment="Center"/>
+                </Border>
+            </StackPanel>
 
+            <TextBlock Grid.Row="4" Grid.Column="0" Text="PLAYTIME" Style="{StaticResource FieldLabel}"/>
+            <Grid Grid.Row="4" Grid.Column="1" Margin="0,0,0,16">
+                <TextBox Style="{StaticResource InputBox}" Margin="0" Text="{Binding PlaytimeHours}"/>
+                <TextBlock Text="hours"
+                           Foreground="{StaticResource TextMuted}"
+                           FontSize="11"
+                           VerticalAlignment="Center"
+                           HorizontalAlignment="Right"
+                           Margin="0,0,12,0"
+                           IsHitTestVisible="False"/>
+            </Grid>
 
-        <TextBlock
-            Grid.Row="4"
-            Grid.Column="0"
-            Text="Playtime:"
-            VerticalAlignment="Center"
-            Margin="0,0,10,10"/>
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="NOTES" Style="{StaticResource FieldLabel}" VerticalAlignment="Top"/>
+            <TextBox Grid.Row="5" Grid.Column="1"
+                     Style="{StaticResource NotesBox}"
+                     AcceptsReturn="True"
+                     TextWrapping="Wrap"
+                     VerticalScrollBarVisibility="Auto"
+                     Text="{Binding Notes}"/>
 
-        <TextBox
-            Grid.Row="4"
-            Grid.Column="1"
-            Margin="0,0,0,10"
-            Text="{Binding PlaytimeHours}"/>
-
-        <TextBlock
-            Grid.Row="5"
-            Grid.Column="0"
-            Text="Notes:"
-            VerticalAlignment="Top"
-            Margin="0,0,10,10"/>
-
-        <TextBox
-            Grid.Row="5"
-            Grid.Column="1"
-            AcceptsReturn="True"
-            TextWrapping="Wrap"
-            Text="{Binding Notes}"/>
-        
-        <Button
-            Grid.Row="6"
-            Grid.Column="1"
-            Content="{Binding SaveButtonText}"
-            Width="100"
-            Height="30"
-            HorizontalAlignment="Right"
-            Margin="0,10,0,0"
-            Command="{Binding AddGameCommand}"/>
+            <Button Grid.Row="6" Grid.Column="1"
+                    Content="{Binding SaveButtonText}"
+                    Width="120"
+                    Height="36"
+                    HorizontalAlignment="Right"
+                    Margin="0,16,0,0"
+                    Style="{StaticResource PrimaryButton}"
+                    Command="{Binding AddGameCommand}"/>
+        </Grid>
     </Grid>
-    
 </Window>

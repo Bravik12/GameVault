@@ -37,6 +37,14 @@
                 Width="100" 
                 Height="30"
                 Click="AddGameButton_Click"/>
+            
+            <Button 
+                x:Name="EditGameButton"
+                Content="Edit Game" 
+                Width="100" 
+                Height="30"
+                Margin="10,0,0,0"
+                Click="EditGameButton_Click"/>
         </StackPanel>
         
         <Grid Grid.Row="2">
@@ -46,6 +54,7 @@
                 Margin="10"
                 AutoGenerateColumns="False"
                 ItemsSource="{Binding Games}"
+                SelectedItem="{Binding SelectedGame}"
                 CanUserAddRows="False">
 
                 <DataGrid.Columns>

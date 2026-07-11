@@ -11,6 +11,8 @@ namespace GameVault.ViewModels
     {
         public event EventHandler<Game>? GameAdded;
 
+        private readonly Game? existingGame;
+
         public string Name { get; set; } = string.Empty;
 
         public string Genre { get; set; } = string.Empty;
@@ -97,43 +99,63 @@ namespace GameVault.ViewModels
 
 
 
-        public AddGameViewModel()
-        {
-            //Name = "Test Game";
-
-            AvailableStatuses = Enum.GetValues<GameStatus>();
-
-            Rating = 5;
-            IsNotRated = false;
-
-            AddGameCommand = new RelayCommand(AddGame);
-        }
 
         private void AddGame()
         {
-            if (!Validate())
-            {
-                MessageBox.Show(
-                    ValidationMessage,
-                    "Validation Error",
-                    MessageBoxButton.OK,
-                    MessageBoxImage.Warning);
+            Game game;
 
-                return;
+            if (existingGame != null)
+            {
+                game = existingGame;
+            }
+            else
+            {
+                game = new Game();
+
             }
 
-            var game = new Game
-            {
-                Name = this.Name,
-                Genre = this.Genre,
-                Status = this.Status,
-                Rating = this.IsNotRated ? null : this.Rating,
-                PlaytimeHours = this.PlaytimeHours,
-                Notes = this.Notes
-            };
+            game.Name = Name;
+            game.Genre = Genre;
+            game.Status = Status;
+            game.Rating = IsNotRated ? null : Rating;
+            game.PlaytimeHours = PlaytimeHours;
+            game.Notes = Notes;
 
             GameAdded?.Invoke(this, game);
         }
+
+
+
+
+        public AddGameViewModel(Game? game = null)
+        {
+            existingGame = game;
+
+            AvailableStatuses = Enum.GetValues<GameStatus>();
+            
+            AddGameCommand = new RelayCommand(AddGame);
+            
+            if (game != null)
+            {
+                Name = game.Name;
+                Genre = game.Genre;
+                Status = game.Status;
+                Rating = game.Rating;
+                PlaytimeHours = game.PlaytimeHours;
+                Notes = game.Notes;
+
+                IsNotRated = !game.Rating.HasValue;
+            } else
+            {
+                Rating = 5;
+                IsNotRated = false;
+            }
+            
+
+            
+        }
+
+
 
 
 

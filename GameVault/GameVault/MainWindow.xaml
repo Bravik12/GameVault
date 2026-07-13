@@ -314,6 +314,12 @@
                         <TextBlock Text="Your personal game library"
                                    FontSize="11"
                                    Foreground="{StaticResource TextSecondary}"/>
+                        <Button Content="&#9881;"
+                                Width="30"
+                                Height="30"
+                                Margin="870,-40,0,0"
+                                Style="{StaticResource SecondaryButton}"
+                                Click="SettingsButton_Click"/>
                     </StackPanel>
                 </StackPanel>
             </Grid>
@@ -339,6 +345,7 @@
                             Style="{StaticResource PrimaryButton}"
                             Click="AddGameButton_Click"/>
 
+
                     <Button x:Name="EditGameButton"
                             Content="Edit"
                             Width="80"
@@ -348,14 +355,23 @@
                             Click="EditGameButton_Click"
                             IsEnabled="{Binding HasSelectedGame}"/>
 
+                    <Button Content="Sync Steam"
+                            Click="ImportSteamButton_Click"
+                            Margin="8,0,0,0"
+                            Width="100"
+                            Style="{StaticResource SecondaryButton}"/>
+                    
                     <Button x:Name="DeleteGameButton"
                             Content="Delete"
                             Width="80"
                             Height="34"
-                            Margin="8,0,0,0"
+                            Margin="320,0,0,0"
                             Style="{StaticResource DangerButton}"
                             Click="DeleteGameButton_Click"
                             IsEnabled="{Binding HasSelectedGame}"/>
+
+                    
+                    
                 </StackPanel>
 
                 <TextBox x:Name="SearchTextBox"
@@ -390,10 +406,10 @@
 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="NAME" Binding="{Binding Name}" Width="2*"/>
-                    <DataGridTextColumn Header="GENRE" Binding="{Binding Genre}" Width="1.3*"/>
                     <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="1*"/>
                     <DataGridTextColumn Header="RATING" Binding="{Binding Rating}" Width="0.8*"/>
                     <DataGridTextColumn Header="PLAYTIME (H)" Binding="{Binding PlaytimeHours}" Width="1*"/>
+                    <DataGridTextColumn Header="ACHIEVEMENTS" Binding="{Binding AchievementsDisplay}" Width="1.3*"/>
                 </DataGrid.Columns>
             </DataGrid>
 

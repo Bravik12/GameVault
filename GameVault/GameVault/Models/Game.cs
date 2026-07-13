@@ -13,6 +13,10 @@ namespace GameVault.Models
         private double? playtimeHours;
         private string? notes;
 
+        private int? steamAppId;
+        private bool isFromSteam;
+        private string? steamImageUrl;
+        private string? steamDescription;
 
         public int Id
         {
@@ -83,6 +87,101 @@ namespace GameVault.Models
                 OnPropertyChanged(nameof(Notes));
             }
         }
+
+
+
+
+
+        public int? SteamAppId
+        {
+            get => steamAppId;
+            set
+            {
+                steamAppId = value;
+                OnPropertyChanged(nameof(SteamAppId));
+            }
+        }
+
+        public bool IsFromSteam
+        {
+            get => isFromSteam;
+            set
+            {
+                isFromSteam = value;
+                OnPropertyChanged(nameof(IsFromSteam));
+            }
+        }
+
+        public string? SteamImageUrl
+        {
+            get => steamImageUrl;
+            set
+            {
+                steamImageUrl = value;
+                OnPropertyChanged(nameof(SteamImageUrl));
+            }
+        }
+
+        public string? SteamDescription
+        {
+            get => steamDescription;
+            set
+            {
+                steamDescription = value;
+                OnPropertyChanged(nameof(SteamDescription));
+            }
+        }
+
+        private string? steamGenres;
+
+        public string? SteamGenres
+        {
+            get => steamGenres;
+            set
+            {
+                steamGenres = value;
+                OnPropertyChanged(nameof(SteamGenres));
+            }
+        }
+
+
+        public string? Developer { get; set; }
+
+        public string? Publisher { get; set; }
+
+        public DateTime? ReleaseDate { get; set; }
+
+        private int? achievementsUnlocked;
+
+        public int? AchievementsUnlocked
+        {
+            get => achievementsUnlocked;
+            set
+            {
+                achievementsUnlocked = value;
+                OnPropertyChanged(nameof(AchievementsUnlocked));
+                OnPropertyChanged(nameof(AchievementsDisplay));
+            }
+        }
+
+        private int? achievementsTotal;
+
+        public int? AchievementsTotal
+        {
+            get => achievementsTotal;
+            set
+            {
+                achievementsTotal = value;
+                OnPropertyChanged(nameof(AchievementsTotal));
+                OnPropertyChanged(nameof(AchievementsDisplay));
+            }
+        }
+
+        public string AchievementsDisplay =>
+            AchievementsTotal is int total && total > 0 && AchievementsUnlocked is int unlocked
+                ? $"{unlocked}/{total} ({Math.Round(unlocked * 100.0 / total)}%)"
+                : "—";
+
 
 
         public event PropertyChangedEventHandler? PropertyChanged;

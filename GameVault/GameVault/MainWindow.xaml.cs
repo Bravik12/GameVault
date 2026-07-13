@@ -49,8 +49,103 @@ namespace GameVault
             HasGames = Games.Count > 0;
         }
 
+        private async void ImportSteamButton_Click(object sender, RoutedEventArgs e)
+        {
 
-       private void AddGameButton_Click(object sender, RoutedEventArgs e)
+            var settingsService = new SettingsService();
+
+            var settings = settingsService.LoadSettings();
+
+            if (string.IsNullOrEmpty(settings.SteamId))
+            {
+                MessageBox.Show("Please set your Steam ID in the settings first.");
+                return;
+            }
+
+            if (string.IsNullOrEmpty(settings.SteamApiKey))
+            {
+                MessageBox.Show("Please set your Steam API key in the settings first.");
+                return;
+            }
+
+            var steamLibraryService = new SteamLibraryService(settings.SteamApiKey);
+
+            var steamGames = await steamLibraryService.GetOwnedGames(settings.SteamId);
+
+            int added = 0;
+            int updated = 0;
+
+
+            foreach (var steamGame in steamGames)
+            {
+                if (settings.IgnoredSteamAppIds.Contains(steamGame.AppId))
+                {
+                    continue;
+                }
+
+                var existingGame = Games.FirstOrDefault(g => g.SteamAppId == steamGame.AppId);
+
+                SteamGameInfo? info = null;
+
+
+                if (existingGame == null || string.IsNullOrWhiteSpace(existingGame.SteamGenres))
+                {
+                    info = await steamLibraryService.GetGameInfo( steamGame.AppId);
+
+                    await Task.Delay(300); // Delay to avoid hitting Steam API rate limits
+                }
+
+                var achievements = await steamLibraryService.GetAchievements(settings.SteamId, steamGame.AppId);
+
+                await Task.Delay(300); // Delay to avoid hitting Steam API rate limits
+
+
+                if (existingGame != null)
+                {
+                    existingGame.PlaytimeHours = steamGame.PlaytimeHours;
+
+                    if (info != null && info.Genres.Any())
+                    {
+                        existingGame.SteamGenres = string.Join(", ", info.Genres.Take(5));
+                    }
+
+                    if (achievements != null)
+                    {
+                        existingGame.AchievementsUnlocked = achievements.Value.Unlocked;
+                        existingGame.AchievementsTotal = achievements.Value.Total;
+                    }
+
+                    updated++;
+                }
+                else
+                {
+                    var newGame = ConvertSteamGame(steamGame, info);
+
+                    if (achievements != null)
+                    {
+                        newGame.AchievementsUnlocked = achievements.Value.Unlocked;
+                        newGame.AchievementsTotal = achievements.Value.Total;
+                    }
+
+                    Games.Add(newGame);
+
+                    added++;
+
+                    gamesView.Refresh();
+                }
+            }
+
+
+
+            storageService.SaveGames(Games);
+
+
+            MessageBox.Show(
+                $"Added: {added}\nUpdated: {updated}", "Steam Sync");
+        }
+
+
+        private void AddGameButton_Click(object sender, RoutedEventArgs e)
         {
             var addGameWindow = new Views.AddGameWindow();
 
@@ -72,6 +167,20 @@ namespace GameVault
             {
                 Games.Add(game);
             }
+        }
+
+        private Game ConvertSteamGame(SteamOwnedGame steamGame, SteamGameInfo? info)
+        {
+            return new Game
+            {
+                Name = steamGame.Name,
+                SteamAppId = steamGame.AppId,
+                PlaytimeHours = steamGame.PlaytimeHours,
+                Status = GameStatus.NotStarted,
+                SteamGenres = info != null && info.Genres.Any()
+                    ? string.Join(", ", info.Genres.Take(5))
+                    : "No genres"
+            };
         }
 
         private Game? selectedGame;
@@ -108,6 +217,9 @@ namespace GameVault
             }
         }
 
+        
+
+
         private void DeleteGameButton_Click(object sender, RoutedEventArgs e)
         {
             if (SelectedGame == null)
@@ -124,10 +236,31 @@ namespace GameVault
 
             if (result == MessageBoxResult.Yes)
             {
+                if (SelectedGame.SteamAppId is int steamAppId)
+                {
+                    var settingsService = new SettingsService();
+                    var settings = settingsService.LoadSettings();
+
+                    if (!settings.IgnoredSteamAppIds.Contains(steamAppId))
+                    {
+                        settings.IgnoredSteamAppIds.Add(steamAppId);
+                        settingsService.SaveSettings(settings);
+                    }
+                }
+
                 Games.Remove(SelectedGame);
 
                 storageService.SaveGames(Games);
             }
+        }
+
+        private void SettingsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var window = new Views.SettingsWindow();
+
+            window.Owner = this;
+            
+            window.ShowDialog();
         }
 
         private GameStatusFilter? selectedStatus;
@@ -231,11 +364,6 @@ namespace GameVault
 
             LoadGames();
         }
-
-
-
-
-
 
     }
 }

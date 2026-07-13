@@ -104,6 +104,29 @@ namespace GameVault.Services
                 }
             }
 
+            if (data.TryGetProperty("developers", out var developers) &&
+                developers.GetArrayLength() > 0)
+            {
+                info.Developer = developers[0].GetString();
+            }
+
+            if (data.TryGetProperty("publishers", out var publishers) &&
+                publishers.GetArrayLength() > 0)
+            {
+                info.Publisher = publishers[0].GetString();
+            }
+
+            if (data.TryGetProperty("release_date", out var releaseDate) &&
+                releaseDate.TryGetProperty("date", out var dateProperty) &&
+                DateTime.TryParse(
+                    dateProperty.GetString(),
+                    System.Globalization.CultureInfo.InvariantCulture,
+                    System.Globalization.DateTimeStyles.None,
+                    out var parsedDate))
+            {
+                info.ReleaseDate = parsedDate;
+            }
+
             System.Diagnostics.Debug.WriteLine($"{info.Name}: {string.Join(", ", info.Genres)}");
 
             return info;

@@ -97,6 +97,18 @@ namespace GameVault.ViewModels
 
         public string? Notes { get; set; } = string.Empty;
 
+        private string? executablePath;
+
+        public string? ExecutablePath
+        {
+            get => executablePath;
+            set
+            {
+                executablePath = value;
+                OnPropertyChanged(nameof(ExecutablePath));
+            }
+        }
+
         public IEnumerable<GameStatus> AvailableStatuses { get; }
 
         public ICommand AddGameCommand { get; }
@@ -124,6 +136,7 @@ namespace GameVault.ViewModels
             game.Rating = IsNotRated ? null : Rating;
             game.PlaytimeHours = PlaytimeHours;
             game.Notes = Notes;
+            game.ExecutablePath = ExecutablePath;
 
             GameSaved?.Invoke(this, game);
         }
@@ -147,6 +160,7 @@ namespace GameVault.ViewModels
                 Rating = game.Rating;
                 PlaytimeHours = game.PlaytimeHours;
                 Notes = game.Notes;
+                ExecutablePath = game.ExecutablePath;
 
                 IsNotRated = !game.Rating.HasValue;
             } else

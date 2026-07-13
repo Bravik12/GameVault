@@ -282,6 +282,35 @@
             </Setter>
         </Style>
 
+        <Style x:Key="SecondaryButtonSmall" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!--  ================= RATING BADGE ================= -->
         <Style x:Key="RatingBadge" TargetType="Border">
             <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
@@ -332,6 +361,7 @@
             </Grid.ColumnDefinitions>
 
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
                 <RowDefinition Height="Auto"/>
@@ -393,15 +423,35 @@
                            IsHitTestVisible="False"/>
             </Grid>
 
-            <TextBlock Grid.Row="5" Grid.Column="0" Text="NOTES" Style="{StaticResource FieldLabel}" VerticalAlignment="Top"/>
-            <TextBox Grid.Row="5" Grid.Column="1"
+            <TextBlock Grid.Row="5" Grid.Column="0" Text="GAME FILE" Style="{StaticResource FieldLabel}"/>
+            <Grid Grid.Row="5" Grid.Column="1" Margin="0,0,0,16">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <TextBox Grid.Column="0"
+                         Style="{StaticResource InputBox}"
+                         Margin="0,0,8,0"
+                         Text="{Binding ExecutablePath}"/>
+
+                <Button Grid.Column="1"
+                        Content="Browse..."
+                        Width="90"
+                        Height="34"
+                        Style="{StaticResource SecondaryButtonSmall}"
+                        Click="BrowseButton_Click"/>
+            </Grid>
+
+            <TextBlock Grid.Row="6" Grid.Column="0" Text="NOTES" Style="{StaticResource FieldLabel}" VerticalAlignment="Top"/>
+            <TextBox Grid.Row="6" Grid.Column="1"
                      Style="{StaticResource NotesBox}"
                      AcceptsReturn="True"
                      TextWrapping="Wrap"
                      VerticalScrollBarVisibility="Auto"
                      Text="{Binding Notes}"/>
 
-            <Button Grid.Row="6" Grid.Column="1"
+            <Button Grid.Row="7" Grid.Column="1"
                     Content="{Binding SaveButtonText}"
                     Width="120"
                     Height="36"

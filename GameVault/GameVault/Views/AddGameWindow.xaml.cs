@@ -43,5 +43,19 @@ namespace GameVault.Views
             DialogResult = true;
 
         }
+
+        private void BrowseButton_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Select Game Executable",
+                Filter = "Executable files (*.exe)|*.exe|All files (*.*)|*.*"
+            };
+
+            if (dialog.ShowDialog() == true)
+            {
+                viewModel.ExecutablePath = dialog.FileName;
+            }
+        }
     }
 }

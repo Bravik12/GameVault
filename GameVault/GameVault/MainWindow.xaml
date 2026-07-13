@@ -283,6 +283,51 @@
                 </Setter.Value>
             </Setter>
         </Style>
+
+        <!--  ================= SCROLLBAR ================= -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="{StaticResource BorderSubtle}"
+                                                        CornerRadius="4"
+                                                        Margin="1,0"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
     </Window.Resources>
 
     <Grid>
@@ -346,15 +391,6 @@
                             Click="AddGameButton_Click"/>
 
 
-                    <Button x:Name="EditGameButton"
-                            Content="Edit"
-                            Width="80"
-                            Height="34"
-                            Margin="8,0,0,0"
-                            Style="{StaticResource SecondaryButton}"
-                            Click="EditGameButton_Click"
-                            IsEnabled="{Binding HasSelectedGame}"/>
-
                     <Button Content="Sync Steam"
                             Click="ImportSteamButton_Click"
                             Margin="8,0,0,0"
@@ -402,13 +438,14 @@
                       ItemsSource="{Binding GamesView}"
                       SelectedItem="{Binding SelectedGame}"
                       CanUserAddRows="False"
-                      IsReadOnly="True">
+                      IsReadOnly="True"
+                      MouseDoubleClick="GamesDataGrid_MouseDoubleClick">
 
                 <DataGrid.Columns>
                     <DataGridTextColumn Header="NAME" Binding="{Binding Name}" Width="2*"/>
                     <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="1*"/>
                     <DataGridTextColumn Header="RATING" Binding="{Binding Rating}" Width="0.8*"/>
-                    <DataGridTextColumn Header="PLAYTIME (H)" Binding="{Binding PlaytimeHours}" Width="1*"/>
+                    <DataGridTextColumn Header="PLAYTIME (H)" Binding="{Binding PlaytimeHours, StringFormat='{}{0:0.#}'}" Width="1*"/>
                     <DataGridTextColumn Header="ACHIEVEMENTS" Binding="{Binding AchievementsDisplay}" Width="1.3*"/>
                 </DataGrid.Columns>
             </DataGrid>

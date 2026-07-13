@@ -88,7 +88,9 @@ namespace GameVault
                 SteamGameInfo? info = null;
 
 
-                if (existingGame == null || string.IsNullOrWhiteSpace(existingGame.SteamGenres))
+                if (existingGame == null ||
+                    string.IsNullOrWhiteSpace(existingGame.SteamGenres) ||
+                    string.IsNullOrWhiteSpace(existingGame.Developer))
                 {
                     info = await steamLibraryService.GetGameInfo( steamGame.AppId);
 
@@ -107,6 +109,15 @@ namespace GameVault
                     if (info != null && info.Genres.Any())
                     {
                         existingGame.SteamGenres = string.Join(", ", info.Genres.Take(5));
+                    }
+
+                    if (info != null)
+                    {
+                        existingGame.SteamImageUrl = info.HeaderImage;
+                        existingGame.SteamDescription = info.ShortDescription;
+                        existingGame.Developer = info.Developer;
+                        existingGame.Publisher = info.Publisher;
+                        existingGame.ReleaseDate = info.ReleaseDate;
                     }
 
                     if (achievements != null)
@@ -177,6 +188,12 @@ namespace GameVault
                 SteamAppId = steamGame.AppId,
                 PlaytimeHours = steamGame.PlaytimeHours,
                 Status = GameStatus.NotStarted,
+                IsFromSteam = true,
+                SteamImageUrl = info?.HeaderImage,
+                SteamDescription = info?.ShortDescription,
+                Developer = info?.Developer,
+                Publisher = info?.Publisher,
+                ReleaseDate = info?.ReleaseDate,
                 SteamGenres = info != null && info.Genres.Any()
                     ? string.Join(", ", info.Genres.Take(5))
                     : "No genres"
@@ -199,25 +216,6 @@ namespace GameVault
 
         public bool HasSelectedGame => SelectedGame != null;
 
-        private void EditGameButton_Click(object sender, RoutedEventArgs e)
-        {
-            if (SelectedGame == null)
-            {
-                MessageBox.Show("Please select a game first.");
-                return;
-            }
-            
-            var editWindow = new Views.AddGameWindow(SelectedGame);
-
-            editWindow.Owner = this;
-
-            if (editWindow.ShowDialog() == true)
-            {
-                storageService.SaveGames(Games);
-            }
-        }
-
-        
 
 
         private void DeleteGameButton_Click(object sender, RoutedEventArgs e)
@@ -250,6 +248,23 @@ namespace GameVault
 
                 Games.Remove(SelectedGame);
 
+                storageService.SaveGames(Games);
+            }
+        }
+
+        private void GamesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        {
+            if (SelectedGame == null)
+            {
+                return;
+            }
+
+            var detailWindow = new Views.GameDetailWindow(SelectedGame);
+
+            detailWindow.Owner = this;
+
+            if (detailWindow.ShowDialog() == true)
+            {
                 storageService.SaveGames(Games);
             }
         }

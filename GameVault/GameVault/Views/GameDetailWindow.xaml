@@ -1,0 +1,530 @@
+<Window x:Class="GameVault.Views.GameDetailWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:GameVault.Converters"
+        mc:Ignorable="d"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        Title="Game Details" Height="840" Width="420"
+        Background="#0A0912">
+
+    <Window.Resources>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:PercentToGridLengthConverter x:Key="PercentToGridLengthConverter"/>
+        <converters:BooleanInverseConverter x:Key="BooleanInverseConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+
+        <!--  ================= PALETTE ================= -->
+        <SolidColorBrush x:Key="BgDeepest"    Color="#0A0912"/>
+        <SolidColorBrush x:Key="BgPanel"      Color="#141225"/>
+        <SolidColorBrush x:Key="BgPanelAlt"   Color="#191733"/>
+        <SolidColorBrush x:Key="BorderSubtle" Color="#2A2748"/>
+        <SolidColorBrush x:Key="AccentPurple" Color="#7C4DFF"/>
+        <SolidColorBrush x:Key="AccentPurpleDark" Color="#5B2FBF"/>
+        <SolidColorBrush x:Key="TextPrimary"  Color="#F1EFFB"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#9C97BE"/>
+        <SolidColorBrush x:Key="TextMuted"    Color="#635E85"/>
+
+        <LinearGradientBrush x:Key="AccentGradient" StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#7C4DFF" Offset="0"/>
+            <GradientStop Color="#3A6FF7" Offset="1"/>
+        </LinearGradientBrush>
+
+        <!--  ================= LABEL / VALUE ================= -->
+        <Style x:Key="FieldLabel" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+
+        <Style x:Key="FieldValue" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize" Value="14"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <!--  ================= EDIT INPUT ================= -->
+        <Style x:Key="EditBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource AccentPurple}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="EditCombo" TargetType="ComboBox">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Margin" Value="0,2,0,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ComboBox">
+                        <Grid>
+                            <ToggleButton x:Name="ToggleBtn"
+                                          Focusable="False"
+                                          IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}"
+                                          ClickMode="Press">
+                                <ToggleButton.Template>
+                                    <ControlTemplate TargetType="ToggleButton">
+                                        <Border Background="{StaticResource BgPanelAlt}"
+                                                BorderBrush="{StaticResource BorderSubtle}"
+                                                BorderThickness="1"
+                                                CornerRadius="6">
+                                            <Grid Margin="8,0,8,0">
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="*"/>
+                                                    <ColumnDefinition Width="Auto"/>
+                                                </Grid.ColumnDefinitions>
+                                                <TextBlock Text="&#9662;"
+                                                           Grid.Column="1"
+                                                           Foreground="{StaticResource AccentPurple}"
+                                                           VerticalAlignment="Center"
+                                                           FontSize="10"/>
+                                            </Grid>
+                                        </Border>
+                                    </ControlTemplate>
+                                </ToggleButton.Template>
+                            </ToggleButton>
+                            <ContentPresenter Margin="8,6,26,6"
+                                              VerticalAlignment="Center"
+                                              IsHitTestVisible="False"
+                                              Content="{TemplateBinding SelectionBoxItem}"/>
+                            <Popup x:Name="Popup"
+                                   IsOpen="{TemplateBinding IsDropDownOpen}"
+                                   Placement="Bottom"
+                                   AllowsTransparency="True"
+                                   Focusable="False"
+                                   PopupAnimation="Fade">
+                                <Border Background="{StaticResource BgPanelAlt}"
+                                        BorderBrush="{StaticResource AccentPurple}"
+                                        BorderThickness="1"
+                                        CornerRadius="6"
+                                        Margin="0,4,0,0"
+                                        MinWidth="{TemplateBinding ActualWidth}">
+                                    <ScrollViewer MaxHeight="200">
+                                        <ItemsPresenter/>
+                                    </ScrollViewer>
+                                </Border>
+                            </Popup>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style TargetType="ComboBoxItem">
+            <Setter Property="Padding" Value="8,6"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Style.Triggers>
+                <Trigger Property="IsHighlighted" Value="True">
+                    <Setter Property="Background" Value="{StaticResource AccentPurpleDark}"/>
+                </Trigger>
+            </Style.Triggers>
+        </Style>
+
+        <!--  ================= RATING SLIDER ================= -->
+        <Style x:Key="RatingSliderStyle" TargetType="Slider">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Height" Value="24"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Slider">
+                        <Grid VerticalAlignment="Center">
+                            <Border Height="4"
+                                    Background="{StaticResource BorderSubtle}"
+                                    CornerRadius="2"/>
+                            <Track x:Name="PART_Track">
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="Slider.DecreaseLarge">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Height="4"
+                                                        Background="{StaticResource AccentGradient}"
+                                                        CornerRadius="2"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="Slider.IncreaseLarge" Opacity="0">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Ellipse Width="16" Height="16"
+                                                         Fill="{StaticResource TextPrimary}"
+                                                         Stroke="{StaticResource AccentPurple}"
+                                                         StrokeThickness="2"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="RatingBadge" TargetType="Border">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="5"/>
+            <Setter Property="Padding" Value="8,3"/>
+            <Setter Property="MinWidth" Value="34"/>
+        </Style>
+
+        <!--  ================= NOTES TEXTBOX ================= -->
+        <Style x:Key="NotesBox" TargetType="TextBox">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="CaretBrush" Value="{StaticResource AccentPurple}"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,8"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="AcceptsReturn" Value="True"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+            <Setter Property="VerticalScrollBarVisibility" Value="Auto"/>
+            <Setter Property="Height" Value="100"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="TextBox">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6">
+                            <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ================= BUTTONS ================= -->
+        <Style x:Key="PrimaryButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource AccentGradient}"/>
+            <Setter Property="Foreground" Value="#0A0912"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="SecondaryButton" TargetType="Button">
+            <Setter Property="Background" Value="#191733"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border Background="{TemplateBinding Background}"
+                                BorderBrush="{TemplateBinding BorderBrush}"
+                                BorderThickness="{TemplateBinding BorderThickness}"
+                                CornerRadius="6"
+                                SnapsToDevicePixels="True">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!--  ================= SCROLLBAR ================= -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width" Value="8"/>
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ScrollBar">
+                        <Grid Background="Transparent">
+                            <Track x:Name="PART_Track" IsDirectionReversed="True">
+                                <Track.Thumb>
+                                    <Thumb>
+                                        <Thumb.Template>
+                                            <ControlTemplate TargetType="Thumb">
+                                                <Border Background="{StaticResource BorderSubtle}"
+                                                        CornerRadius="4"
+                                                        Margin="1,0"/>
+                                            </ControlTemplate>
+                                        </Thumb.Template>
+                                    </Thumb>
+                                </Track.Thumb>
+                                <Track.DecreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageUpCommand" Opacity="0">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.DecreaseRepeatButton>
+                                <Track.IncreaseRepeatButton>
+                                    <RepeatButton Command="ScrollBar.PageDownCommand" Opacity="0">
+                                        <RepeatButton.Template>
+                                            <ControlTemplate>
+                                                <Border Background="Transparent"/>
+                                            </ControlTemplate>
+                                        </RepeatButton.Template>
+                                    </RepeatButton>
+                                </Track.IncreaseRepeatButton>
+                            </Track>
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid Margin="24,20,24,20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="170"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!--  ============ NAME ============ -->
+        <TextBlock Grid.Row="0"
+                   Text="{Binding Name}"
+                   FontSize="24"
+                   FontWeight="Bold"
+                   Foreground="{StaticResource TextPrimary}"
+                   TextWrapping="Wrap"
+                   Margin="0,0,0,16"
+                   Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanInverseConverter}}"/>
+
+        <TextBox Grid.Row="0"
+                 Style="{StaticResource EditBox}"
+                 FontSize="20"
+                 FontWeight="Bold"
+                 Margin="0,0,0,16"
+                 Text="{Binding Name, UpdateSourceTrigger=PropertyChanged}"
+                 Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+        <!--  ============ IMAGE ============ -->
+        <Border Grid.Row="1"
+                CornerRadius="8"
+                Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderSubtle}"
+                BorderThickness="1"
+                Margin="0,0,0,20"
+                ClipToBounds="True">
+
+            <Grid>
+                <Image Source="{Binding SteamImageUrl}"
+                       Stretch="UniformToFill"
+                       Visibility="{Binding SteamImageUrl, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                <TextBlock Text="&#127918;"
+                           FontSize="40"
+                           Opacity="0.35"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           Visibility="{Binding SteamImageUrl, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Invert}"/>
+            </Grid>
+        </Border>
+
+        <!--  ============ PLAY ============ -->
+        <Button x:Name="PlayButton"
+                Grid.Row="2"
+                Content="&#9654; Play"
+                Height="40"
+                Margin="0,0,0,20"
+                Style="{StaticResource PrimaryButton}"
+                IsEnabled="{Binding CanPlay}"
+                Click="PlayButton_Click"/>
+
+        <!--  ============ INFO + NOTES ============ -->
+        <ScrollViewer Grid.Row="3" VerticalScrollBarVisibility="Auto" Padding="0,0,10,0">
+            <StackPanel>
+
+                <Grid Margin="0,0,0,20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <StackPanel Grid.Row="0" Grid.Column="0" Margin="0,0,10,14">
+                        <TextBlock Text="DEVELOPER" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding Developer}" Style="{StaticResource FieldValue}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="0" Grid.Column="1" Margin="10,0,0,14">
+                        <TextBlock Text="PUBLISHER" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding Publisher}" Style="{StaticResource FieldValue}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="0" Margin="0,0,10,14">
+                        <TextBlock Text="RELEASE DATE" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding ReleaseDate, StringFormat='{}{0:d MMM yyyy}'}" Style="{StaticResource FieldValue}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="1" Grid.Column="1" Margin="10,0,0,14">
+                        <TextBlock Text="GENRES" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding SteamGenres}" Style="{StaticResource FieldValue}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,0">
+                        <TextBlock Text="STATUS" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding Status}"
+                                   Style="{StaticResource FieldValue}"
+                                   Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanInverseConverter}}"/>
+                        <ComboBox x:Name="StatusComboBox"
+                                  Style="{StaticResource EditCombo}"
+                                  SelectedItem="{Binding Status}"
+                                  Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+                    </StackPanel>
+
+                    <StackPanel Grid.Row="2" Grid.Column="1" Margin="10,0,0,0">
+                        <TextBlock Text="RATING" Style="{StaticResource FieldLabel}"/>
+                        <TextBlock Text="{Binding Rating}"
+                                   Style="{StaticResource FieldValue}"
+                                   Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanInverseConverter}}"/>
+                        <StackPanel Orientation="Horizontal"
+                                    Margin="0,4,0,0"
+                                    Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}">
+                            <Slider Style="{StaticResource RatingSliderStyle}"
+                                    Minimum="1"
+                                    Maximum="10"
+                                    Value="{Binding Rating, Mode=TwoWay}"
+                                    TickFrequency="0.25"
+                                    IsSnapToTickEnabled="True"
+                                    Width="90"
+                                    VerticalAlignment="Center"/>
+                            <Border Style="{StaticResource RatingBadge}" Margin="8,0,0,0">
+                                <TextBlock Text="{Binding Rating}"
+                                           Foreground="{StaticResource TextPrimary}"
+                                           FontWeight="SemiBold"
+                                           FontSize="12"
+                                           HorizontalAlignment="Center"/>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Grid>
+
+                <StackPanel Margin="0,0,0,14">
+                    <TextBlock Text="PLAYTIME" Style="{StaticResource FieldLabel}"/>
+                    <TextBlock Text="{Binding PlaytimeHours, StringFormat='{}{0:0.#} h'}" Style="{StaticResource FieldValue}"/>
+                </StackPanel>
+
+                <StackPanel Margin="0,0,0,20">
+                    <TextBlock Text="ACHIEVEMENTS" Style="{StaticResource FieldLabel}"/>
+
+                    <Border Height="12"
+                            CornerRadius="6"
+                            Background="{StaticResource BgPanelAlt}"
+                            BorderBrush="{StaticResource BorderSubtle}"
+                            BorderThickness="1"
+                            Margin="0,6,0,6"
+                            ClipToBounds="True">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="{Binding AchievementsPercent, Converter={StaticResource PercentToGridLengthConverter}}"/>
+                                <ColumnDefinition Width="{Binding AchievementsPercent, Converter={StaticResource PercentToGridLengthConverter}, ConverterParameter=Remainder}"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Grid.Column="0" CornerRadius="6" Background="{StaticResource AccentGradient}"/>
+                        </Grid>
+                    </Border>
+
+                    <TextBlock Text="{Binding AchievementsDisplay}" Style="{StaticResource FieldValue}" Margin="0"/>
+                </StackPanel>
+
+                <TextBlock Text="NOTES" Style="{StaticResource FieldLabel}" Margin="0,0,0,6"/>
+                <TextBlock Text="{Binding Notes}"
+                           Style="{StaticResource FieldValue}"
+                           Margin="0"
+                           Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanInverseConverter}}"/>
+                <TextBox x:Name="NotesTextBox"
+                         Style="{StaticResource NotesBox}"
+                         Text="{Binding Notes, UpdateSourceTrigger=PropertyChanged}"
+                         Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <!--  ============ BUTTONS (VIEW MODE) ============ -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0"
+                    Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanInverseConverter}}">
+            <Button Content="Edit"
+                    Width="100"
+                    Height="36"
+                    Style="{StaticResource SecondaryButton}"
+                    Click="EditButton_Click"
+                    Margin="0,0,10,0"/>
+            <Button Content="Close"
+                    Width="100"
+                    Height="36"
+                    Style="{StaticResource PrimaryButton}"
+                    Click="CloseButton_Click"/>
+        </StackPanel>
+
+        <!--  ============ BUTTONS (EDIT MODE) ============ -->
+        <StackPanel Grid.Row="4" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,16,0,0"
+                    Visibility="{Binding IsEditing, RelativeSource={RelativeSource AncestorType=Window}, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <Button Content="Cancel"
+                    Width="100"
+                    Height="36"
+                    Style="{StaticResource SecondaryButton}"
+                    Click="CancelEditButton_Click"
+                    Margin="0,0,10,0"/>
+            <Button Content="Save"
+                    Width="100"
+                    Height="36"
+                    Style="{StaticResource PrimaryButton}"
+                    Click="SaveEditButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

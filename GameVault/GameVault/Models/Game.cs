@@ -151,6 +151,10 @@ namespace GameVault.Models
 
         public DateTime? ReleaseDate { get; set; }
 
+        public string? ExecutablePath { get; set; }
+
+        public bool CanPlay => SteamAppId.HasValue || !string.IsNullOrWhiteSpace(ExecutablePath);
+
         private int? achievementsUnlocked;
 
         public int? AchievementsUnlocked
@@ -161,6 +165,7 @@ namespace GameVault.Models
                 achievementsUnlocked = value;
                 OnPropertyChanged(nameof(AchievementsUnlocked));
                 OnPropertyChanged(nameof(AchievementsDisplay));
+                OnPropertyChanged(nameof(AchievementsPercent));
             }
         }
 
@@ -174,6 +179,7 @@ namespace GameVault.Models
                 achievementsTotal = value;
                 OnPropertyChanged(nameof(AchievementsTotal));
                 OnPropertyChanged(nameof(AchievementsDisplay));
+                OnPropertyChanged(nameof(AchievementsPercent));
             }
         }
 
@@ -181,6 +187,11 @@ namespace GameVault.Models
             AchievementsTotal is int total && total > 0 && AchievementsUnlocked is int unlocked
                 ? $"{unlocked}/{total} ({Math.Round(unlocked * 100.0 / total)}%)"
                 : "—";
+
+        public double AchievementsPercent =>
+            AchievementsTotal is int total && total > 0 && AchievementsUnlocked is int unlocked
+                ? unlocked * 100.0 / total
+                : 0;
 
 
 

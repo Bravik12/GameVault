@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Text.Json.Serialization;
 
 namespace GameVault.Models
 {
@@ -154,6 +155,19 @@ namespace GameVault.Models
         public string? ExecutablePath { get; set; }
 
         public bool CanPlay => SteamAppId.HasValue || !string.IsNullOrWhiteSpace(ExecutablePath);
+
+        private bool needsInstall;
+
+        [JsonIgnore]
+        public bool NeedsInstall
+        {
+            get => needsInstall;
+            set
+            {
+                needsInstall = value;
+                OnPropertyChanged(nameof(NeedsInstall));
+            }
+        }
 
         private int? achievementsUnlocked;
 

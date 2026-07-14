@@ -5,6 +5,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -24,6 +25,8 @@ namespace GameVault
         public ObservableCollection<Game> Games { get; }
 
         private readonly GameStorageService storageService;
+
+        private readonly SteamInstallationService steamInstallationService = new();
 
         private bool hasGames;
 
@@ -126,6 +129,8 @@ namespace GameVault
                         existingGame.AchievementsTotal = achievements.Value.Total;
                     }
 
+                    RefreshInstallState(existingGame);
+
                     updated++;
                 }
                 else
@@ -137,6 +142,8 @@ namespace GameVault
                         newGame.AchievementsUnlocked = achievements.Value.Unlocked;
                         newGame.AchievementsTotal = achievements.Value.Total;
                     }
+
+                    RefreshInstallState(newGame);
 
                     Games.Add(newGame);
 
@@ -176,7 +183,17 @@ namespace GameVault
 
             foreach (var game in loadedGames)
             {
+                RefreshInstallState(game);
+
                 Games.Add(game);
+            }
+        }
+
+        private void RefreshInstallState(Game game)
+        {
+            if (game.SteamAppId is int appId)
+            {
+                game.NeedsInstall = !steamInstallationService.IsGameInstalled(appId);
             }
         }
 
@@ -218,55 +235,79 @@ namespace GameVault
 
 
 
-        private void DeleteGameButton_Click(object sender, RoutedEventArgs e)
+        private void DetailPanel_DeleteRequested(object? sender, Game gameToDelete)
         {
-            if (SelectedGame == null)
+            if (gameToDelete.SteamAppId is int steamAppId)
             {
-                MessageBox.Show("Please select a game first.");
-                return;
-            }
+                var settingsService = new SettingsService();
+                var settings = settingsService.LoadSettings();
 
-            var result = MessageBox.Show(
-                $"Are you sure you want to delete {SelectedGame.Name}?",
-                "Delete Game",
-                MessageBoxButton.YesNo,
-                MessageBoxImage.Warning);
-
-            if (result == MessageBoxResult.Yes)
-            {
-                if (SelectedGame.SteamAppId is int steamAppId)
+                if (!settings.IgnoredSteamAppIds.Contains(steamAppId))
                 {
-                    var settingsService = new SettingsService();
-                    var settings = settingsService.LoadSettings();
-
-                    if (!settings.IgnoredSteamAppIds.Contains(steamAppId))
-                    {
-                        settings.IgnoredSteamAppIds.Add(steamAppId);
-                        settingsService.SaveSettings(settings);
-                    }
+                    settings.IgnoredSteamAppIds.Add(steamAppId);
+                    settingsService.SaveSettings(settings);
                 }
-
-                Games.Remove(SelectedGame);
-
-                storageService.SaveGames(Games);
             }
+
+            Games.Remove(gameToDelete);
+
+            storageService.SaveGames(Games);
+
+            ClosePanel();
         }
 
-        private void GamesDataGrid_MouseDoubleClick(object sender, MouseButtonEventArgs e)
+        private void GamesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (SelectedGame == null)
             {
                 return;
             }
 
-            var detailWindow = new Views.GameDetailWindow(SelectedGame);
+            DetailPanel.LoadGame(SelectedGame);
 
-            detailWindow.Owner = this;
+            OpenPanel();
+        }
 
-            if (detailWindow.ShowDialog() == true)
+        private void DetailOverlay_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            storageService.SaveGames(Games);
+
+            ClosePanel();
+        }
+
+        private void OpenPanel()
+        {
+            DetailOverlay.Visibility = Visibility.Visible;
+
+            var easing = new CubicEase { EasingMode = EasingMode.EaseOut };
+
+            DetailPanelTransform.BeginAnimation(
+                TranslateTransform.XProperty,
+                new DoubleAnimation(0, TimeSpan.FromMilliseconds(220)) { EasingFunction = easing });
+
+            DetailOverlay.BeginAnimation(
+                OpacityProperty,
+                new DoubleAnimation(0.55, TimeSpan.FromMilliseconds(220)));
+        }
+
+        private void ClosePanel()
+        {
+            var easing = new CubicEase { EasingMode = EasingMode.EaseIn };
+
+            var slideOut = new DoubleAnimation(DetailPanelHost.Width, TimeSpan.FromMilliseconds(200))
             {
-                storageService.SaveGames(Games);
-            }
+                EasingFunction = easing
+            };
+
+            slideOut.Completed += (_, _) => DetailOverlay.Visibility = Visibility.Collapsed;
+
+            DetailPanelTransform.BeginAnimation(TranslateTransform.XProperty, slideOut);
+
+            DetailOverlay.BeginAnimation(
+                OpacityProperty,
+                new DoubleAnimation(0, TimeSpan.FromMilliseconds(200)));
+
+            SelectedGame = null;
         }
 
         private void SettingsButton_Click(object sender, RoutedEventArgs e)
@@ -298,6 +339,29 @@ namespace GameVault
         public ICollectionView GamesView => gamesView;
 
         public IEnumerable<GameStatusFilter> AvailableStatuses { get; }
+
+        private GameSortOption? selectedSortOption;
+
+        public GameSortOption? SelectedSortOption
+        {
+            get => selectedSortOption;
+            set
+            {
+                selectedSortOption = value;
+
+                OnPropertyChanged(nameof(SelectedSortOption));
+
+                gamesView.SortDescriptions.Clear();
+
+                if (selectedSortOption?.PropertyName != null)
+                {
+                    gamesView.SortDescriptions.Add(
+                        new SortDescription(selectedSortOption.PropertyName, selectedSortOption.Direction));
+                }
+            }
+        }
+
+        public IEnumerable<GameSortOption> AvailableSortOptions { get; }
 
         private string searchText = string.Empty;
 
@@ -356,7 +420,18 @@ namespace GameVault
     };
         }
 
-        
+        private List<GameSortOption> CreateSortOptions()
+        {
+            return new List<GameSortOption>
+            {
+                new() { Name = "Name (A-Z)", PropertyName = nameof(Game.Name), Direction = ListSortDirection.Ascending },
+                new() { Name = "Rating (High-Low)", PropertyName = nameof(Game.Rating), Direction = ListSortDirection.Descending },
+                new() { Name = "Playtime (High-Low)", PropertyName = nameof(Game.PlaytimeHours), Direction = ListSortDirection.Descending },
+                new() { Name = "Achievements (High-Low)", PropertyName = nameof(Game.AchievementsPercent), Direction = ListSortDirection.Descending }
+            };
+        }
+
+
         public MainWindow()
         {
             InitializeComponent();
@@ -367,17 +442,31 @@ namespace GameVault
 
             AvailableStatuses = CreateStatusFilters();
 
+            AvailableSortOptions = CreateSortOptions();
+
             gamesView = CollectionViewSource.GetDefaultView(Games);
 
             gamesView.Filter = FilterGames;
 
             SelectedStatus = AvailableStatuses.First();
 
+            SelectedSortOption = AvailableSortOptions.First();
+
             Games.CollectionChanged += Games_CollectionChanged;
+
+            DetailPanel.CloseRequested += DetailPanel_CloseRequested;
+            DetailPanel.DeleteRequested += DetailPanel_DeleteRequested;
 
             DataContext = this;
 
             LoadGames();
+        }
+
+        private void DetailPanel_CloseRequested(object? sender, EventArgs e)
+        {
+            storageService.SaveGames(Games);
+
+            ClosePanel();
         }
 
     }

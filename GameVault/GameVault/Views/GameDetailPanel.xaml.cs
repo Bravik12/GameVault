@@ -2,18 +2,19 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
+using System.Windows.Controls;
 using GameVault.Models;
 using GameVault.Services;
 
 namespace GameVault.Views
 {
-    public partial class GameDetailWindow : Window
+    public partial class GameDetailPanel : UserControl
     {
         public static readonly DependencyProperty IsEditingProperty =
             DependencyProperty.Register(
                 nameof(IsEditing),
                 typeof(bool),
-                typeof(GameDetailWindow),
+                typeof(GameDetailPanel),
                 new PropertyMetadata(false));
 
         public bool IsEditing
@@ -22,22 +23,35 @@ namespace GameVault.Views
             set => SetValue(IsEditingProperty, value);
         }
 
-        private readonly Game game;
+        public event EventHandler? CloseRequested;
+        public event EventHandler<Game>? DeleteRequested;
+
+        private Game? game;
 
         private string editSnapshotName = string.Empty;
         private GameStatus editSnapshotStatus;
         private double? editSnapshotRating;
         private string? editSnapshotNotes;
 
-        public GameDetailWindow(Game game)
+        public GameDetailPanel()
         {
             InitializeComponent();
 
-            this.game = game;
+            StatusComboBox.ItemsSource = Enum.GetValues<GameStatus>();
+        }
+
+        public void LoadGame(Game newGame)
+        {
+            if (IsEditing)
+            {
+                RevertToSnapshot();
+            }
+
+            game = newGame;
 
             DataContext = game;
 
-            StatusComboBox.ItemsSource = Enum.GetValues<GameStatus>();
+            IsEditing = false;
 
             if (game.SteamAppId is int appId)
             {
@@ -45,10 +59,19 @@ namespace GameVault.Views
 
                 PlayButton.Content = isInstalled ? "▶ Play" : "⬇ Install";
             }
+            else
+            {
+                PlayButton.Content = "▶ Play";
+            }
         }
 
         private void EditButton_Click(object sender, RoutedEventArgs e)
         {
+            if (game == null)
+            {
+                return;
+            }
+
             editSnapshotName = game.Name;
             editSnapshotStatus = game.Status;
             editSnapshotRating = game.Rating;
@@ -59,12 +82,22 @@ namespace GameVault.Views
 
         private void CancelEditButton_Click(object sender, RoutedEventArgs e)
         {
+            RevertToSnapshot();
+
+            IsEditing = false;
+        }
+
+        private void RevertToSnapshot()
+        {
+            if (game == null)
+            {
+                return;
+            }
+
             game.Name = editSnapshotName;
             game.Status = editSnapshotStatus;
             game.Rating = editSnapshotRating;
             game.Notes = editSnapshotNotes;
-
-            IsEditing = false;
         }
 
         private void SaveEditButton_Click(object sender, RoutedEventArgs e)
@@ -74,11 +107,35 @@ namespace GameVault.Views
 
         private void CloseButton_Click(object sender, RoutedEventArgs e)
         {
-            DialogResult = true;
+            CloseRequested?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void DeleteButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (game == null)
+            {
+                return;
+            }
+
+            var result = MessageBox.Show(
+                $"Are you sure you want to delete {game.Name}?",
+                "Delete Game",
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning);
+
+            if (result == MessageBoxResult.Yes)
+            {
+                DeleteRequested?.Invoke(this, game);
+            }
         }
 
         private void PlayButton_Click(object sender, RoutedEventArgs e)
         {
+            if (game == null)
+            {
+                return;
+            }
+
             try
             {
                 if (game.SteamAppId is int appId)

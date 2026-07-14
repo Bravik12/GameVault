@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:GameVault"
         xmlns:converters="clr-namespace:GameVault.Converters"
+        xmlns:views="clr-namespace:GameVault.Views"
         mc:Ignorable="d"
         Title="GameVault" Height="600" Width="1000"
         MinHeight="500" MinWidth="800"
@@ -12,6 +13,10 @@
 
     <Window.Resources>
         <converters:BooleanInverseConverter x:Key="BooleanInverseConverter"/>
+        <converters:StringToVisibilityConverter x:Key="StringToVisibilityConverter"/>
+        <converters:GameStatusToBrushConverter x:Key="GameStatusToBrushConverter"/>
+        <converters:PercentToGridLengthConverter x:Key="PercentToGridLengthConverter"/>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
 
         <!--  ================= PALETTE ================= -->
         <SolidColorBrush x:Key="BgDeepest"   Color="#0A0912"/>
@@ -110,15 +115,6 @@
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
-        </Style>
-
-        <Style x:Key="DangerButton" TargetType="Button" BasedOn="{StaticResource SecondaryButton}">
-            <Setter Property="Foreground" Value="{StaticResource DangerRed}"/>
-            <Style.Triggers>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="BorderBrush" Value="{StaticResource DangerRed}"/>
-                </Trigger>
-            </Style.Triggers>
         </Style>
 
         <!--  ================= TEXTBOX ================= -->
@@ -228,60 +224,53 @@
             </Style.Triggers>
         </Style>
 
-        <!--  ================= DATAGRID ================= -->
-        <Style x:Key="VaultGrid" TargetType="DataGrid">
-            <Setter Property="Background" Value="{StaticResource BgPanel}"/>
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
-            <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="RowBackground" Value="{StaticResource BgRow}"/>
-            <Setter Property="AlternatingRowBackground" Value="{StaticResource BgRowAlt}"/>
-            <Setter Property="GridLinesVisibility" Value="None"/>
-            <Setter Property="HeadersVisibility" Value="Column"/>
-            <Setter Property="RowHeight" Value="34"/>
-            <Setter Property="FontSize" Value="13"/>
-            <Setter Property="VerticalGridLinesBrush" Value="{StaticResource BorderSubtle}"/>
-            <Setter Property="HorizontalGridLinesBrush" Value="{StaticResource BorderSubtle}"/>
-        </Style>
-
-        <Style TargetType="DataGridColumnHeader">
-            <Setter Property="Background" Value="#1C1938"/>
-            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
-            <Setter Property="FontWeight" Value="SemiBold"/>
-            <Setter Property="FontSize" Value="12"/>
-            <Setter Property="Padding" Value="12,10"/>
-            <Setter Property="BorderBrush" Value="{StaticResource BorderSubtle}"/>
-            <Setter Property="BorderThickness" Value="0,0,0,2"/>
-            <Setter Property="HorizontalContentAlignment" Value="Left"/>
-        </Style>
-
-        <Style TargetType="DataGridRow">
-            <Setter Property="Foreground" Value="{StaticResource TextPrimary}"/>
-            <Style.Triggers>
-                <Trigger Property="IsSelected" Value="True">
-                    <Setter Property="Background" Value="{StaticResource AccentPurpleDark}"/>
-                </Trigger>
-                <Trigger Property="IsMouseOver" Value="True">
-                    <Setter Property="Background" Value="#221F42"/>
-                </Trigger>
-            </Style.Triggers>
-        </Style>
-
-        <Style TargetType="DataGridCell">
-            <Setter Property="Padding" Value="12,4"/>
-            <Setter Property="BorderThickness" Value="0"/>
-            <Setter Property="Background" Value="Transparent"/>
+        <!--  ================= GAME TILE ================= -->
+        <Style x:Key="GameTileItem" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="0,0,16,16"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+            <Setter Property="VerticalContentAlignment" Value="Stretch"/>
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="DataGridCell">
-                        <Border Background="{TemplateBinding Background}"
-                                Padding="{TemplateBinding Padding}"
-                                SnapsToDevicePixels="True">
-                            <ContentPresenter VerticalAlignment="Center"/>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="TileBorder"
+                                Width="210"
+                                Height="340"
+                                CornerRadius="10"
+                                Background="{StaticResource BgPanel}"
+                                BorderBrush="{StaticResource BorderSubtle}"
+                                BorderThickness="1"
+                                ClipToBounds="True">
+                            <ContentPresenter/>
                         </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="TileBorder" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                                <Setter TargetName="TileBorder" Property="Effect">
+                                    <Setter.Value>
+                                        <DropShadowEffect Color="#7C4DFF" BlurRadius="20" ShadowDepth="0" Opacity="0.55"/>
+                                    </Setter.Value>
+                                </Setter>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="TileBorder" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                                <Setter TargetName="TileBorder" Property="Background" Value="{StaticResource BgPanelAlt}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
             </Setter>
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding NeedsInstall}" Value="True">
+                    <Setter Property="Opacity" Value="0.5"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="StatusBadge" TargetType="Border">
+            <Setter Property="CornerRadius" Value="10"/>
+            <Setter Property="Padding" Value="8,2"/>
+            <Setter Property="HorizontalAlignment" Value="Left"/>
         </Style>
 
         <!--  ================= SCROLLBAR ================= -->
@@ -340,33 +329,50 @@
 
         <!--  ============ HEADER ============ -->
         <Border Grid.Row="0" Background="{StaticResource HeaderGradient}">
-            <Grid Margin="20,16">
-                <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                    <Border Width="34" Height="34"
-                            CornerRadius="8"
-                            Background="{StaticResource AccentGradient}"
-                            Margin="0,0,12,0">
-                        <TextBlock Text="&#127918;"
-                                   FontSize="17"
-                                   HorizontalAlignment="Center"
-                                   VerticalAlignment="Center"/>
-                    </Border>
-                    <StackPanel VerticalAlignment="Center">
-                        <TextBlock Text="GameVault"
-                                   FontSize="22"
-                                   FontWeight="Bold"
-                                   Foreground="{StaticResource TextPrimary}"/>
-                        <TextBlock Text="Your personal game library"
-                                   FontSize="11"
-                                   Foreground="{StaticResource TextSecondary}"/>
-                        <Button Content="&#9881;"
-                                Width="30"
-                                Height="30"
-                                Margin="870,-40,0,0"
-                                Style="{StaticResource SecondaryButton}"
-                                Click="SettingsButton_Click"/>
+            <Grid>
+                <Grid Margin="20,16">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+
+                    <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
+                        <Border Width="42" Height="42"
+                                CornerRadius="12"
+                                Background="{StaticResource AccentGradient}"
+                                Margin="0,0,14,0">
+                            <Border.Effect>
+                                <DropShadowEffect Color="#7C4DFF" BlurRadius="18" ShadowDepth="0" Opacity="0.6"/>
+                            </Border.Effect>
+                            <TextBlock Text="&#127918;"
+                                       FontSize="20"
+                                       HorizontalAlignment="Center"
+                                       VerticalAlignment="Center"/>
+                        </Border>
+                        <StackPanel VerticalAlignment="Center">
+                            <TextBlock Text="GameVault"
+                                       FontSize="24"
+                                       FontWeight="Bold"
+                                       Foreground="{StaticResource AccentGradient}"/>
+                            <TextBlock Text="Your personal game library"
+                                       FontSize="11"
+                                       Foreground="{StaticResource TextSecondary}"/>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
+
+                    <Button Grid.Column="1"
+                            Content="&#9881;"
+                            Width="30"
+                            Height="30"
+                            VerticalAlignment="Center"
+                            Style="{StaticResource SecondaryButton}"
+                            Click="SettingsButton_Click"/>
+                </Grid>
+
+                <Border Height="2"
+                        VerticalAlignment="Bottom"
+                        Background="{StaticResource AccentGradient}"
+                        Opacity="0.6"/>
             </Grid>
         </Border>
 
@@ -379,6 +385,8 @@
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="220"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
@@ -396,32 +404,27 @@
                             Margin="8,0,0,0"
                             Width="100"
                             Style="{StaticResource SecondaryButton}"/>
-                    
-                    <Button x:Name="DeleteGameButton"
-                            Content="Delete"
-                            Width="80"
-                            Height="34"
-                            Margin="320,0,0,0"
-                            Style="{StaticResource DangerButton}"
-                            Click="DeleteGameButton_Click"
-                            IsEnabled="{Binding HasSelectedGame}"/>
-
-                    
-                    
                 </StackPanel>
 
                 <TextBox x:Name="SearchTextBox"
                          Grid.Column="2"
-                         Width="220"
                          Height="34"
-                         Margin="10,0,10,0"
+                         Margin="0,0,10,0"
                          Style="{StaticResource SearchBox}"
                          Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}"
                          Tag="Search your library..."/>
 
+                <ComboBox x:Name="SortComboBox"
+                          Grid.Column="3"
+                          Width="170"
+                          Height="34"
+                          Margin="0,0,10,0"
+                          Style="{StaticResource FilterCombo}"
+                          ItemsSource="{Binding AvailableSortOptions}"
+                          SelectedItem="{Binding SelectedSortOption}"/>
+
                 <ComboBox x:Name="FilterComboBox"
-                          Grid.Column="2"
-                          HorizontalAlignment="Right"
+                          Grid.Column="4"
                           Width="140"
                           Height="34"
                           Style="{StaticResource FilterCombo}"
@@ -432,23 +435,110 @@
 
         <!--  ============ GAME LIST ============ -->
         <Grid Grid.Row="2" Background="{StaticResource BgDeepest}">
-            <DataGrid Margin="20"
-                      Style="{StaticResource VaultGrid}"
-                      AutoGenerateColumns="False"
-                      ItemsSource="{Binding GamesView}"
-                      SelectedItem="{Binding SelectedGame}"
-                      CanUserAddRows="False"
-                      IsReadOnly="True"
-                      MouseDoubleClick="GamesDataGrid_MouseDoubleClick">
+            <ListBox x:Name="GamesListBox"
+                         Margin="20"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         ItemsSource="{Binding GamesView}"
+                         SelectedItem="{Binding SelectedGame}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ItemContainerStyle="{StaticResource GameTileItem}"
+                         SelectionChanged="GamesListBox_SelectionChanged">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="140"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
 
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="NAME" Binding="{Binding Name}" Width="2*"/>
-                    <DataGridTextColumn Header="STATUS" Binding="{Binding Status}" Width="1*"/>
-                    <DataGridTextColumn Header="RATING" Binding="{Binding Rating}" Width="0.8*"/>
-                    <DataGridTextColumn Header="PLAYTIME (H)" Binding="{Binding PlaytimeHours, StringFormat='{}{0:0.#}'}" Width="1*"/>
-                    <DataGridTextColumn Header="ACHIEVEMENTS" Binding="{Binding AchievementsDisplay}" Width="1.3*"/>
-                </DataGrid.Columns>
-            </DataGrid>
+                                <Border Grid.Row="0"
+                                        Background="{StaticResource BgPanelAlt}">
+                                    <Grid>
+                                        <Image Source="{Binding SteamImageUrl}"
+                                               Stretch="UniformToFill"
+                                               Visibility="{Binding SteamImageUrl, Converter={StaticResource StringToVisibilityConverter}}"/>
+
+                                        <TextBlock Text="&#127918;"
+                                                   FontSize="34"
+                                                   Opacity="0.35"
+                                                   HorizontalAlignment="Center"
+                                                   VerticalAlignment="Center"
+                                                   Visibility="{Binding SteamImageUrl, Converter={StaticResource StringToVisibilityConverter}, ConverterParameter=Invert}"/>
+                                    </Grid>
+                                </Border>
+
+                                <StackPanel Grid.Row="1" Margin="12,10,12,12">
+                                    <TextBlock Text="{Binding Name}"
+                                               FontWeight="SemiBold"
+                                               FontSize="14"
+                                               Foreground="{StaticResource TextPrimary}"
+                                               TextTrimming="CharacterEllipsis"/>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                                        <Border Style="{StaticResource StatusBadge}"
+                                                Background="{Binding Status, Converter={StaticResource GameStatusToBrushConverter}}">
+                                            <TextBlock Text="{Binding Status}"
+                                                       FontSize="10"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="#0A0912"/>
+                                        </Border>
+
+                                        <Border Style="{StaticResource StatusBadge}"
+                                                Background="{StaticResource BgPanelAlt}"
+                                                BorderBrush="{StaticResource BorderSubtle}"
+                                                BorderThickness="1"
+                                                Margin="6,0,0,0"
+                                                Visibility="{Binding NeedsInstall, Converter={StaticResource BooleanToVisibilityConverter}}">
+                                            <TextBlock Text="&#11015; Install"
+                                                       FontSize="9"
+                                                       FontWeight="SemiBold"
+                                                       Foreground="{StaticResource TextSecondary}"/>
+                                        </Border>
+                                    </StackPanel>
+
+                                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                                        <TextBlock Text="{Binding Rating, StringFormat='&#9733; {0}'}"
+                                                   FontSize="11"
+                                                   FontWeight="SemiBold"
+                                                   Foreground="{StaticResource AccentPurple}"/>
+
+                                        <TextBlock Text="{Binding PlaytimeHours, StringFormat='{}{0:0.#} h played'}"
+                                                   FontSize="11"
+                                                   Foreground="{StaticResource TextMuted}"
+                                                   Margin="10,0,0,0"/>
+                                    </StackPanel>
+
+                                    <StackPanel Margin="0,12,0,0">
+                                        <Border Height="6"
+                                                CornerRadius="3"
+                                                Background="{StaticResource BgDeepest}"
+                                                ClipToBounds="True">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="{Binding AchievementsPercent, Converter={StaticResource PercentToGridLengthConverter}}"/>
+                                                    <ColumnDefinition Width="{Binding AchievementsPercent, Converter={StaticResource PercentToGridLengthConverter}, ConverterParameter=Remainder}"/>
+                                                </Grid.ColumnDefinitions>
+                                                <Border Grid.Column="0" CornerRadius="3" Background="{StaticResource AccentGradient}"/>
+                                            </Grid>
+                                        </Border>
+
+                                        <TextBlock Text="{Binding AchievementsDisplay}"
+                                                   FontSize="10"
+                                                   Foreground="{StaticResource TextMuted}"
+                                                   Margin="0,4,0,0"/>
+                                    </StackPanel>
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+            </ListBox>
 
             <StackPanel HorizontalAlignment="Center"
                         VerticalAlignment="Center"
@@ -469,6 +559,25 @@
                            Foreground="{StaticResource TextMuted}"
                            Margin="0,4,0,0"/>
             </StackPanel>
+
+            <!--  ============ DETAIL PANEL OVERLAY ============ -->
+            <Border x:Name="DetailOverlay"
+                    Background="#B0000000"
+                    Visibility="Collapsed"
+                    Opacity="0"
+                    MouseDown="DetailOverlay_MouseDown"/>
+
+            <Border x:Name="DetailPanelHost"
+                    Width="380"
+                    HorizontalAlignment="Right"
+                    Background="{StaticResource BgDeepest}"
+                    BorderBrush="{StaticResource BorderSubtle}"
+                    BorderThickness="1,0,0,0">
+                <Border.RenderTransform>
+                    <TranslateTransform x:Name="DetailPanelTransform" X="380"/>
+                </Border.RenderTransform>
+                <views:GameDetailPanel x:Name="DetailPanel"/>
+            </Border>
         </Grid>
 
         <!--  ============ FOOTER / STATUS BAR ============ -->

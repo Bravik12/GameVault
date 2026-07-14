@@ -127,8 +127,6 @@ namespace GameVault.Services
                 info.ReleaseDate = parsedDate;
             }
 
-            System.Diagnostics.Debug.WriteLine($"{info.Name}: {string.Join(", ", info.Genres)}");
-
             return info;
         }
 

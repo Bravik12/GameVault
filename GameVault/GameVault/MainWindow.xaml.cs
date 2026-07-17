@@ -24,7 +24,11 @@ namespace GameVault
     {
         public ObservableCollection<Game> Games { get; }
 
+        public ObservableCollection<GameList> GameLists { get; }
+
         private readonly GameStorageService storageService;
+
+        private readonly GameListStorageService gameListStorageService;
 
         private readonly SteamInstallationService steamInstallationService = new();
 
@@ -137,6 +141,8 @@ namespace GameVault
                 {
                     var newGame = ConvertSteamGame(steamGame, info);
 
+                    newGame.Id = GetNextGameId();
+
                     if (achievements != null)
                     {
                         newGame.AchievementsUnlocked = achievements.Value.Unlocked;
@@ -171,6 +177,8 @@ namespace GameVault
 
             if (addGameWindow.ShowDialog() == true && addGameWindow.CreatedGame is Game game)
             {
+                game.Id = GetNextGameId();
+
                 Games.Add(game);
 
                 storageService.SaveGames(Games);
@@ -181,12 +189,31 @@ namespace GameVault
         {
             var loadedGames = storageService.LoadGames();
 
+            var neededBackfill = false;
+
             foreach (var game in loadedGames)
             {
+                if (game.Id <= 0)
+                {
+                    game.Id = GetNextGameId();
+
+                    neededBackfill = true;
+                }
+
                 RefreshInstallState(game);
 
                 Games.Add(game);
             }
+
+            if (neededBackfill)
+            {
+                storageService.SaveGames(Games);
+            }
+        }
+
+        private int GetNextGameId()
+        {
+            return Games.Count == 0 ? 1 : Games.Max(g => g.Id) + 1;
         }
 
         private void RefreshInstallState(Game game)
@@ -249,11 +276,48 @@ namespace GameVault
                 }
             }
 
+            foreach (var list in GameLists)
+            {
+                list.GameIds.Remove(gameToDelete.Id);
+            }
+
+            gameListStorageService.SaveLists(GameLists);
+
             Games.Remove(gameToDelete);
 
             storageService.SaveGames(Games);
 
             ClosePanel();
+        }
+
+        private void AllListsButton_Click(object sender, RoutedEventArgs e)
+        {
+            GameListsBox.SelectedItem = null;
+
+            SelectedGameList = null;
+        }
+
+        private void AddListButton_Click(object sender, RoutedEventArgs e)
+        {
+            var createListWindow = new Views.CreateListWindow();
+
+            createListWindow.Owner = this;
+
+            if (createListWindow.ShowDialog() == true)
+            {
+                var newList = new GameList { Name = createListWindow.ListName };
+
+                GameLists.Add(newList);
+
+                gameListStorageService.SaveLists(GameLists);
+            }
+        }
+
+        private void DetailPanel_ListMembershipChanged(object? sender, EventArgs e)
+        {
+            gameListStorageService.SaveLists(GameLists);
+
+            gamesView.Refresh();
         }
 
         private void GamesListBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -340,6 +404,36 @@ namespace GameVault
 
         public IEnumerable<GameStatusFilter> AvailableStatuses { get; }
 
+        private GameList? selectedGameList;
+
+        public GameList? SelectedGameList
+        {
+            get => selectedGameList;
+            set
+            {
+                selectedGameList = value;
+
+                OnPropertyChanged(nameof(SelectedGameList));
+
+                gamesView.Refresh();
+            }
+        }
+
+        private bool showInstalledOnly;
+
+        public bool ShowInstalledOnly
+        {
+            get => showInstalledOnly;
+            set
+            {
+                showInstalledOnly = value;
+
+                OnPropertyChanged(nameof(ShowInstalledOnly));
+
+                gamesView.Refresh();
+            }
+        }
+
         private GameSortOption? selectedSortOption;
 
         public GameSortOption? SelectedSortOption
@@ -405,6 +499,20 @@ namespace GameVault
             }
 
 
+            // Filtr podle vlastního seznamu
+            if (SelectedGameList != null && !SelectedGameList.GameIds.Contains(game.Id))
+            {
+                return false;
+            }
+
+
+            // Filtr jen nainstalované hry
+            if (ShowInstalledOnly && game.NeedsInstall)
+            {
+                return false;
+            }
+
+
             return true;
         }
 
@@ -438,7 +546,11 @@ namespace GameVault
 
             storageService = new GameStorageService();
 
+            gameListStorageService = new GameListStorageService();
+
             Games = new ObservableCollection<Game>();
+
+            GameLists = new ObservableCollection<GameList>(gameListStorageService.LoadLists());
 
             AvailableStatuses = CreateStatusFilters();
 
@@ -454,8 +566,11 @@ namespace GameVault
 
             Games.CollectionChanged += Games_CollectionChanged;
 
+            DetailPanel.Initialize(GameLists);
+
             DetailPanel.CloseRequested += DetailPanel_CloseRequested;
             DetailPanel.DeleteRequested += DetailPanel_DeleteRequested;
+            DetailPanel.ListMembershipChanged += DetailPanel_ListMembershipChanged;
 
             DataContext = this;
 

@@ -1,10 +1,12 @@
 using System;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using GameVault.Models;
-using GameVault.Services;
+using GameVault.ViewModels;
 
 namespace GameVault.Views
 {
@@ -25,8 +27,10 @@ namespace GameVault.Views
 
         public event EventHandler? CloseRequested;
         public event EventHandler<Game>? DeleteRequested;
+        public event EventHandler? ListMembershipChanged;
 
         private Game? game;
+        private ObservableCollection<GameList>? gameLists;
 
         private string editSnapshotName = string.Empty;
         private GameStatus editSnapshotStatus;
@@ -38,6 +42,11 @@ namespace GameVault.Views
             InitializeComponent();
 
             StatusComboBox.ItemsSource = Enum.GetValues<GameStatus>();
+        }
+
+        public void Initialize(ObservableCollection<GameList> lists)
+        {
+            gameLists = lists;
         }
 
         public void LoadGame(Game newGame)
@@ -53,16 +62,42 @@ namespace GameVault.Views
 
             IsEditing = false;
 
-            if (game.SteamAppId is int appId)
-            {
-                var isInstalled = new SteamInstallationService().IsGameInstalled(appId);
+            PlayButton.Content = game.SteamAppId.HasValue && game.NeedsInstall ? "⬇ Install" : "▶ Play";
 
-                PlayButton.Content = isInstalled ? "▶ Play" : "⬇ Install";
+            if (gameLists != null)
+            {
+                ListsItemsControl.ItemsSource = gameLists
+                    .Select(list => new GameListMembershipItem(list, list.GameIds.Contains(game.Id)))
+                    .ToList();
+
+                ListsSection.Visibility = gameLists.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
             }
             else
             {
-                PlayButton.Content = "▶ Play";
+                ListsSection.Visibility = Visibility.Collapsed;
             }
+        }
+
+        private void ListMembershipCheckBox_Click(object sender, RoutedEventArgs e)
+        {
+            if (game == null || sender is not FrameworkElement { DataContext: GameListMembershipItem item })
+            {
+                return;
+            }
+
+            if (item.IsChecked)
+            {
+                if (!item.List.GameIds.Contains(game.Id))
+                {
+                    item.List.GameIds.Add(game.Id);
+                }
+            }
+            else
+            {
+                item.List.GameIds.Remove(game.Id);
+            }
+
+            ListMembershipChanged?.Invoke(this, EventArgs.Empty);
         }
 
         private void EditButton_Click(object sender, RoutedEventArgs e)

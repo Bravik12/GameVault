@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:GameVault"
         xmlns:converters="clr-namespace:GameVault.Converters"
         xmlns:views="clr-namespace:GameVault.Views"
+        xmlns:vwp="clr-namespace:WpfToolkit.Controls;assembly=VirtualizingWrapPanel"
         mc:Ignorable="d"
         Title="GameVault" Height="600" Width="1000"
         MinHeight="500" MinWidth="800"
@@ -267,10 +268,108 @@
             </Style.Triggers>
         </Style>
 
+        <!--  ================= LIST CHIPS ================= -->
+        <Style x:Key="ListChipButton" TargetType="Button">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Height" Value="30"/>
+            <Setter Property="Padding" Value="14,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="Button">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource BorderSubtle}"
+                                BorderThickness="1"
+                                CornerRadius="15">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <Style x:Key="AllListChip" TargetType="Button" BasedOn="{StaticResource ListChipButton}">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding SelectedGameList}" Value="{x:Null}">
+                    <Setter Property="Background" Value="{StaticResource AccentGradient}"/>
+                    <Setter Property="Foreground" Value="#0A0912"/>
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+
+        <Style x:Key="GameListChip" TargetType="ListBoxItem">
+            <Setter Property="Margin" Value="0,0,8,0"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="chipBorder"
+                                Height="30"
+                                CornerRadius="15"
+                                Padding="14,0"
+                                Background="{StaticResource BgPanelAlt}"
+                                BorderBrush="{StaticResource BorderSubtle}"
+                                BorderThickness="1">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="chipBorder" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                            </Trigger>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="chipBorder" Property="Background" Value="{StaticResource AccentGradient}"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <Style x:Key="StatusBadge" TargetType="Border">
             <Setter Property="CornerRadius" Value="10"/>
             <Setter Property="Padding" Value="8,2"/>
             <Setter Property="HorizontalAlignment" Value="Left"/>
+        </Style>
+
+        <Style x:Key="InstalledOnlyToggle" TargetType="ToggleButton">
+            <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Padding" Value="12,0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ToggleButton">
+                        <Border x:Name="border"
+                                Background="{TemplateBinding Background}"
+                                BorderBrush="{StaticResource BorderSubtle}"
+                                BorderThickness="1"
+                                CornerRadius="6">
+                            <ContentPresenter HorizontalAlignment="Center"
+                                              VerticalAlignment="Center"
+                                              Margin="{TemplateBinding Padding}"/>
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="border" Property="Background" Value="{StaticResource AccentGradient}"/>
+                                <Setter Property="Foreground" Value="#0A0912"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
         </Style>
 
         <!--  ================= SCROLLBAR ================= -->
@@ -321,6 +420,7 @@
 
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
@@ -388,6 +488,7 @@
                     <ColumnDefinition Width="220"/>
                     <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
 
                 <StackPanel Grid.Column="0" Orientation="Horizontal">
@@ -427,14 +528,74 @@
                           Grid.Column="4"
                           Width="140"
                           Height="34"
+                          Margin="0,0,10,0"
                           Style="{StaticResource FilterCombo}"
                           ItemsSource="{Binding AvailableStatuses}"
                           SelectedItem="{Binding SelectedStatus}"/>
+
+                <ToggleButton x:Name="InstalledOnlyToggle"
+                              Grid.Column="5"
+                              Content="&#11015; Installed only"
+                              Height="34"
+                              Style="{StaticResource InstalledOnlyToggle}"
+                              IsChecked="{Binding ShowInstalledOnly}"/>
             </Grid>
         </Border>
 
+        <!--  ============ LIST TABS ============ -->
+        <Border Grid.Row="2"
+                Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderSubtle}"
+                BorderThickness="0,0,0,1">
+            <StackPanel Orientation="Horizontal" Margin="20,10">
+                <Button x:Name="AllListsButton"
+                        Content="All"
+                        MinWidth="70"
+                        Style="{StaticResource AllListChip}"
+                        Click="AllListsButton_Click"
+                        Margin="0,0,8,0"/>
+
+                <ListBox x:Name="GameListsBox"
+                         Background="Transparent"
+                         BorderThickness="0"
+                         ItemsSource="{Binding GameLists}"
+                         SelectedItem="{Binding SelectedGameList}"
+                         ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                         ScrollViewer.VerticalScrollBarVisibility="Disabled"
+                         ItemContainerStyle="{StaticResource GameListChip}">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Name}" FontSize="12" FontWeight="SemiBold">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding RelativeSource={RelativeSource AncestorType=ListBoxItem}, Path=IsSelected}" Value="True">
+                                                <Setter Property="Foreground" Value="#0A0912"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+
+                <Button Content="&#10133;"
+                        Width="34"
+                        Style="{StaticResource ListChipButton}"
+                        Click="AddListButton_Click"
+                        Margin="8,0,0,0"/>
+            </StackPanel>
+        </Border>
+
         <!--  ============ GAME LIST ============ -->
-        <Grid Grid.Row="2" Background="{StaticResource BgDeepest}">
+        <Grid Grid.Row="3" Background="{StaticResource BgDeepest}">
             <ListBox x:Name="GamesListBox"
                          Margin="20"
                          Background="Transparent"
@@ -443,11 +604,15 @@
                          SelectedItem="{Binding SelectedGame}"
                          ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                          ScrollViewer.VerticalScrollBarVisibility="Auto"
+                         ScrollViewer.CanContentScroll="True"
+                         VirtualizingPanel.IsVirtualizing="True"
+                         VirtualizingPanel.VirtualizationMode="Recycling"
+                         VirtualizingPanel.ScrollUnit="Pixel"
                          ItemContainerStyle="{StaticResource GameTileItem}"
                          SelectionChanged="GamesListBox_SelectionChanged">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
-                            <WrapPanel Orientation="Horizontal"/>
+                            <vwp:VirtualizingWrapPanel Orientation="Horizontal"/>
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
@@ -581,7 +746,7 @@
         </Grid>
 
         <!--  ============ FOOTER / STATUS BAR ============ -->
-        <Border Grid.Row="3"
+        <Border Grid.Row="4"
                 Background="{StaticResource BgPanel}"
                 BorderBrush="{StaticResource BorderSubtle}"
                 BorderThickness="0,1,0,0">

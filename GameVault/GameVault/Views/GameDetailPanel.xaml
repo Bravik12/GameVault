@@ -204,6 +204,45 @@
             <Setter Property="MinWidth" Value="34"/>
         </Style>
 
+        <!--  ================= LIST CHECKBOX ================= -->
+        <Style x:Key="ListCheckBox" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondary}"/>
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <StackPanel Orientation="Horizontal">
+                            <Border x:Name="box"
+                                    Width="16" Height="16"
+                                    CornerRadius="4"
+                                    Background="{StaticResource BgPanelAlt}"
+                                    BorderBrush="{StaticResource BorderSubtle}"
+                                    BorderThickness="1"
+                                    VerticalAlignment="Center">
+                                <TextBlock x:Name="check"
+                                           Text="&#10003;"
+                                           FontSize="10"
+                                           FontWeight="Bold"
+                                           Foreground="#0A0912"
+                                           HorizontalAlignment="Center"
+                                           VerticalAlignment="Center"
+                                           Visibility="Collapsed"/>
+                            </Border>
+                            <ContentPresenter Margin="6,0,0,0" VerticalAlignment="Center"/>
+                        </StackPanel>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="box" Property="Background" Value="{StaticResource AccentGradient}"/>
+                                <Setter TargetName="box" Property="BorderBrush" Value="{StaticResource AccentPurple}"/>
+                                <Setter TargetName="check" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
         <!--  ================= NOTES TEXTBOX ================= -->
         <Style x:Key="NotesBox" TargetType="TextBox">
             <Setter Property="Background" Value="{StaticResource BgPanelAlt}"/>
@@ -483,6 +522,26 @@
                     </Border>
 
                     <TextBlock Text="{Binding AchievementsDisplay}" Style="{StaticResource FieldValue}" Margin="0"/>
+                </StackPanel>
+
+                <StackPanel x:Name="ListsSection" Margin="0,0,0,20">
+                    <TextBlock Text="LISTS" Style="{StaticResource FieldLabel}" Margin="0,0,0,8"/>
+                    <ItemsControl x:Name="ListsItemsControl">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <CheckBox Content="{Binding Name}"
+                                          IsChecked="{Binding IsChecked}"
+                                          Style="{StaticResource ListCheckBox}"
+                                          Click="ListMembershipCheckBox_Click"
+                                          Margin="0,0,14,8"/>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
                 </StackPanel>
 
                 <TextBlock Text="NOTES" Style="{StaticResource FieldLabel}" Margin="0,0,0,6"/>

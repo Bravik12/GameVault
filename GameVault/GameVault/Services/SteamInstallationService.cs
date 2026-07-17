@@ -8,6 +8,8 @@ namespace GameVault.Services
 {
     public class SteamInstallationService
     {
+        private List<string>? cachedLibraryFolders;
+
         public bool IsGameInstalled(int appId)
         {
             try
@@ -34,30 +36,39 @@ namespace GameVault.Services
             return false;
         }
 
-        private IEnumerable<string> GetLibraryFolders()
+        private List<string> GetLibraryFolders()
         {
+            if (cachedLibraryFolders != null)
+            {
+                return cachedLibraryFolders;
+            }
+
+            var folders = new List<string>();
+
             var steamPath = GetSteamPath();
 
             if (string.IsNullOrEmpty(steamPath))
             {
-                yield break;
+                cachedLibraryFolders = folders;
+                return folders;
             }
 
-            yield return steamPath;
+            folders.Add(steamPath);
 
             var libraryFoldersFile = Path.Combine(steamPath, "steamapps", "libraryfolders.vdf");
 
-            if (!File.Exists(libraryFoldersFile))
+            if (File.Exists(libraryFoldersFile))
             {
-                yield break;
+                var content = File.ReadAllText(libraryFoldersFile);
+
+                foreach (Match match in Regex.Matches(content, "\"path\"\\s+\"([^\"]+)\""))
+                {
+                    folders.Add(match.Groups[1].Value.Replace(@"\\", @"\"));
+                }
             }
 
-            var content = File.ReadAllText(libraryFoldersFile);
-
-            foreach (Match match in Regex.Matches(content, "\"path\"\\s+\"([^\"]+)\""))
-            {
-                yield return match.Groups[1].Value.Replace(@"\\", @"\");
-            }
+            cachedLibraryFolders = folders;
+            return folders;
         }
 
         private string? GetSteamPath()
